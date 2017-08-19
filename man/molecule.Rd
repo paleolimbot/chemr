@@ -6,13 +6,16 @@
 \alias{molecules}
 \alias{as_molecule}
 \alias{as_molecules}
+\alias{as_molecule.molecule}
+\alias{as_molecule.molecules}
 \alias{as_molecule.character}
 \alias{as_molecule.formula}
+\alias{as_molecules.molecules}
 \alias{as_molecules.molecule}
 \alias{as_molecules.character}
 \alias{as_molecules.formula}
 \alias{new_molecules}
-\alias{NA_molecule}
+\alias{NA_molecule_}
 \alias{validate_molecule}
 \alias{validate_molecules}
 \alias{is_molecule}
@@ -20,7 +23,7 @@
 \title{Create a molecule object}
 \format{An object of class \code{molecule} of length 0.}
 \usage{
-molecule(..., charge = 0, validate = TRUE)
+molecule(..., charge = 0L, validate = TRUE)
 
 molecules(..., validate = TRUE)
 
@@ -28,9 +31,15 @@ as_molecule(x, ...)
 
 as_molecules(x, ...)
 
+\method{as_molecule}{molecule}(x, ...)
+
+\method{as_molecule}{molecules}(x, ...)
+
 \method{as_molecule}{character}(x, validate = TRUE, ...)
 
 \method{as_molecule}{formula}(x, validate = TRUE, ...)
+
+\method{as_molecules}{molecules}(x, ...)
 
 \method{as_molecules}{molecule}(x, validate = TRUE, ...)
 
@@ -40,7 +49,7 @@ as_molecules(x, ...)
 
 new_molecules(x)
 
-NA_molecule
+NA_molecule_
 
 validate_molecule(x)
 
@@ -53,7 +62,11 @@ is_molecules(x)
 \arguments{
 \item{...}{A named list of symbols and counts}
 
-\item{charge}{}
+\item{charge}{The charge of the molecule}
+
+\item{validate}{Validate elements in molecule}
+
+\item{x}{An objec to be coerced to type molecule(s)}
 }
 \value{
 An object of class molecule

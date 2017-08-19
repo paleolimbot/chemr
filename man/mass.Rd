@@ -9,7 +9,6 @@
 \alias{charge.default}
 \alias{charge.molecule}
 \alias{charge.molecules}
-\alias{elmass}
 \title{Access properties of a molecule object}
 \usage{
 mass(x)
@@ -27,8 +26,6 @@ charge(x)
 \method{charge}{molecule}(x)
 
 \method{charge}{molecules}(x)
-
-elmass(x)
 }
 \arguments{
 \item{x}{A molecule object or symbol string}
@@ -41,8 +38,6 @@ Access properties of a molecule object
 }
 \examples{
 mass("H")
-elmass("H")
-elmass("H20")
 m <- as_molecule("H2O")
 mass(m)
 

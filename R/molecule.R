@@ -1,9 +1,10 @@
 
-
 #' Create a molecule object
 #'
 #' @param ... A named list of symbols and counts
-#' @param charge
+#' @param charge The charge of the molecule
+#' @param validate Validate elements in molecule
+#' @param x An objec to be coerced to type molecule(s)
 #'
 #' @return An object of class molecule
 #' @export
@@ -13,12 +14,13 @@
 #' m2 <- molecule(H=1, charge = 1)
 #' molecules(m1, m2)
 #'
-molecule <- function(..., charge = 0, validate = TRUE) {
+molecule <- function(..., charge = 0L, validate = TRUE) {
   x <- c(...)
   x <- stats::setNames(as.double(x), names(x))
   x[is.na(x)] <- 1
   if(is.null(names(x))) stop("Arguments to molecule must be named")
-  m <- new_molecule(x, charge = charge, mass = sum(x * elmass(syms)))
+  m <- new_molecule(x, charge = as.integer(charge),
+                    mass = sum(x * elmass(names(x))))
   if(validate) validate_molecule(m)
   m
 }
@@ -26,7 +28,7 @@ molecule <- function(..., charge = 0, validate = TRUE) {
 #' @rdname molecule
 #' @export
 molecules <- function(..., validate = TRUE) {
-  ml <- new_molecules <- list(...)
+  ml <- new_molecules(lapply(list(...), as_molecule))
   if(validate) validate_molecules(ml)
   ml
 }
@@ -38,6 +40,19 @@ as_molecule <- function(x, ...) UseMethod("as_molecule")
 #' @rdname molecule
 #' @export
 as_molecules <- function(x, ...) UseMethod("as_molecules")
+
+#' @rdname molecule
+#' @export
+as_molecule.molecule <- function(x, ...) {
+  x
+}
+
+#' @rdname molecule
+#' @export
+as_molecule.molecules <- function(x, ...) {
+  if(length(x) > 1) warning("Using first of ", length(x), " molecules in x")
+  x[[1]]
+}
 
 #' @rdname molecule
 #' @export
@@ -56,6 +71,12 @@ as_molecule.formula <- function(x, validate = TRUE, ...) {
   m <- parse_molecules(vars[1], validate = FALSE)[[1]]
   if(validate) validate_molecule(m)
   m
+}
+
+#' @rdname molecule
+#' @export
+as_molecules.molecules <- function(x, ...) {
+  x
 }
 
 #' @rdname molecule
@@ -87,7 +108,7 @@ as_molecules.formula <- function(x, validate = TRUE, ...) {
 #' @export
 #'
 #' @examples
-#' m <- new_molecule(c(H=2, O=1), charge = 0, mass = 18.01528)
+#' m <- new_molecule(c(H=2, O=1), charge = 0L, mass = 18.01528)
 #' validate_molecule(m)
 #' is_molecule(m)
 #'
@@ -105,8 +126,8 @@ new_molecules <- function(x) {
 
 #' @rdname molecule
 #' @export
-NA_molecule <- new_molecule(stats::setNames(numeric(0), character(0)),
-                            charge = NA_integer_, mass = NA_real_)
+NA_molecule_ <- new_molecule(stats::setNames(numeric(0), character(0)),
+                             charge = NA_integer_, mass = NA_real_)
 
 #' @rdname molecule
 #' @export
@@ -156,6 +177,54 @@ is_molecules <- function(x) {
   inherits(x, "molecules")
 }
 
+#' Coerce molecule(s) to character
+#'
+#' @param x A molecule(s) object
+#' @param ... Ignored
+#'
+#' @return A character vector
+#' @export
+#'
+#' @examples
+#' print(as_molecule(~H2O))
+#' print(as_molecules(~H2O))
+#' as.character(NA_molecule_)
+#' as.character(molecules(NA_molecule_))
+#'
+print.molecule <- function(x, ...) {
+  cat("<molecule>", as.character(x))
+  invisible(x)
+}
+
+#' @rdname print.molecule
+#' @export
+print.molecules <- function(x, ...) {
+  cat("<molecules>\n")
+  print(as.character(x), quote = FALSE)
+  invisible(x)
+}
+
+#' @rdname print.molecule
+#' @export
+as.character.molecule <- function(x, ...) {
+  if(identical(x, NA_molecule_)) return("<NA_molecule_>")
+  counts <- ifelse(x == 1, "", unclass(x)) # will be character
+  charge <- charge(x)
+  charge <- ifelse(charge == 1, "+",
+                   ifelse(charge == -1, "-",
+                          ifelse(charge > 0, paste("+", charge),
+                                 ifelse(charge == 0, "", charge))))
+  mat <- rbind(names(x), counts)
+  dim(mat) <- NULL
+  paste0(paste(mat, collapse = ""), charge)
+}
+
+#' @rdname print.molecule
+#' @export
+as.character.molecules <- function(x, ...) {
+  vapply(x, as.character.molecule, character(1))
+}
+
 
 #' Access properties of a molecule object
 #'
@@ -166,8 +235,6 @@ is_molecules <- function(x) {
 #'
 #' @examples
 #' mass("H")
-#' elmass("H")
-#' elmass("H20")
 #' m <- as_molecule("H2O")
 #' mass(m)
 #'
@@ -217,25 +284,28 @@ charge.molecules <- function(x) {
 .el_regex <- "([A-Z][a-z]{0,2})([0-9]*)"
 .charge_regex <- "([-+][0-9]*)$"
 
-parse_molecules <- function(txt, validate = TRUE) {
+parse_molecules <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>", "")) {
+  mol_na <- txt %in% na
   matches <- stringr::str_match_all(txt, .el_regex)
   # process charges
   charge_matches <- stringr::str_extract(txt, .charge_regex)
   # charge of "-" is -1, "+" is "+1"
   charges <- ifelse(charge_matches == "-", "-1", charge_matches)
-  charges <- ifelse(charges == "+", 1L, as.integer(charges))
+  charges <- ifelse(charges == "+", 1L, suppressWarnings(as.integer(charges)))
   # no charge is zero
   charges[is.na(charges)] <- 0L
 
   mol_list <- lapply(seq_along(matches), function(i) {
     mol_string <- txt[i]
+    # check for NA
+    if(is.na(mol_string) || mol_na) return(NA_molecule_)
     match <- matches[[i]]
 
     # check for full match
-    all_matches <- c(match[, 1, drop = TRUE], na.omit(charge_matches[i]))
+    all_matches <- c(match[, 1, drop = TRUE], stats::na.omit(charge_matches[i]))
     if(nchar(paste(all_matches, collapse = "")) != nchar(mol_string)) {
       warning("Bad molecule text: ", mol_string)
-      return(NA_molecule)
+      return(NA_molecule_)
     }
 
     # extract symbols

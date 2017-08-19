@@ -22,6 +22,6 @@ pt <- elements %>%
   tibble::as.tibble()
 
 # add to package
-devtools::use_data(pt)
+devtools::use_data(pt, overwrite = TRUE)
 
 

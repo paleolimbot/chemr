@@ -20,7 +20,7 @@ An double vector with class "molecule"
 Create, validate molecule objects
 }
 \examples{
-m <- new_molecule(c(H=2, O=1), charge = 0, mass = 18.01528)
+m <- new_molecule(c(H=2, O=1), charge = 0L, mass = 18.01528)
 validate_molecule(m)
 is_molecule(m)
 
