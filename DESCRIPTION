@@ -1,0 +1,17 @@
+Package: chemr
+Type: Package
+Title: R Data Structures for Chemistry Data
+Version: 0.1.0.9000
+Author: Dewey Dunnington <dewey@fishandwhistle.net>
+Maintainer: Dewey Dunnington <dewey@fishandwhistle.net>
+Description: Chemistry calculations are often tedious and 
+  error-prone, and benefit from automated calculations that are
+  possible using matrix algebra and other modeling capabilities.
+  Chemr provides data structures and functions that allow these
+  calculations to be easily specified.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports: stringr, tibble
+Suggests: testthat
+RoxygenNote: 6.0.1
