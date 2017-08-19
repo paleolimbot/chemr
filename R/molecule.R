@@ -234,7 +234,7 @@ parse_molecules <- function(txt, validate = TRUE) {
     # check for full match
     all_matches <- c(match[, 1, drop = TRUE], na.omit(charge_matches[i]))
     if(nchar(paste(all_matches, collapse = "")) != nchar(mol_string)) {
-      warning("Bad molecule text: ", txt)
+      warning("Bad molecule text: ", mol_string)
       return(NA_molecule)
     }
 
