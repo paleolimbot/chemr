@@ -3,11 +3,11 @@
 \name{mass}
 \alias{mass}
 \alias{mass.default}
-\alias{mass.molecule}
+\alias{mass.molecule_single}
 \alias{mass.molecules}
 \alias{charge}
 \alias{charge.default}
-\alias{charge.molecule}
+\alias{charge.molecule_single}
 \alias{charge.molecules}
 \title{Access properties of a molecule object}
 \usage{
@@ -15,7 +15,7 @@ mass(x)
 
 \method{mass}{default}(x)
 
-\method{mass}{molecule}(x)
+\method{mass}{molecule_single}(x)
 
 \method{mass}{molecules}(x)
 
@@ -23,7 +23,7 @@ charge(x)
 
 \method{charge}{default}(x)
 
-\method{charge}{molecule}(x)
+\method{charge}{molecule_single}(x)
 
 \method{charge}{molecules}(x)
 }
@@ -38,7 +38,7 @@ Access properties of a molecule object
 }
 \examples{
 mass("H")
-m <- as_molecule("H2O")
+m <- as_molecule_single("H2O")
 mass(m)
 
 }

@@ -10,93 +10,123 @@
 #' @export
 #'
 #' @examples
-#' m1 <- molecule(H=2, O=1)
-#' m2 <- molecule(H=1, charge = 1)
+#' m1 <- molecule_single(H=2, O=1)
+#' m2 <- molecule_single(H=1, charge = 1)
 #' molecules(m1, m2)
 #'
-molecule <- function(..., charge = 0L, validate = TRUE) {
-  x <- c(...)
-  x <- stats::setNames(as.double(x), names(x))
-  x[is.na(x)] <- 1
-  if(is.null(names(x))) stop("Arguments to molecule must be named")
-  m <- new_molecule(x, charge = as.integer(charge),
-                    mass = sum(x * elmass(names(x))))
-  if(validate) validate_molecule(m)
-  m
-}
-
-#' @rdname molecule
-#' @export
 molecules <- function(..., validate = TRUE) {
-  ml <- new_molecules(lapply(list(...), as_molecule))
+  ml <- new_molecules(lapply(list(...), as_molecule_single))
   if(validate) validate_molecules(ml)
   ml
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecule <- function(x, ...) UseMethod("as_molecule")
+molecule_single <- function(..., charge = 0L, validate = TRUE) {
+  x <- c(...)
+  x <- stats::setNames(as.double(x), names(x))
+  x[is.na(x)] <- 1
+  if(is.null(names(x))) stop("Arguments to molecule must be named")
+  m <- new_molecule_single(x, charge = as.integer(charge),
+                    mass = sum(x * elmass(names(x))))
+  if(validate) validate_molecule_single(m)
+  m
+}
 
-#' @rdname molecule
+#' @rdname molecules
+#' @export
+as_molecule_single <- function(x, ...) UseMethod("as_molecule_single")
+
+#' @rdname molecules
 #' @export
 as_molecules <- function(x, ...) UseMethod("as_molecules")
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecule.molecule <- function(x, ...) {
+as_molecule_single.molecule_single <- function(x, ...) {
   x
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecule.molecules <- function(x, ...) {
+as_molecule_single.molecules <- function(x, ...) {
   if(length(x) > 1) warning("Using first of ", length(x), " molecules in x")
   x[[1]]
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecule.character <- function(x, validate = TRUE, ...) {
+as_molecule_single.character <- function(x, validate = TRUE, ...) {
   if(length(x) > 1) warning("More than one molecule in x. Did you mean as_molecules()?")
   m <- parse_molecules(x[1], validate = FALSE)[[1]]
-  if(validate) validate_molecule(m)
+  if(validate) validate_molecule_single(m)
   m
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecule.formula <- function(x, validate = TRUE, ...) {
+as_molecule_single.formula <- function(x, validate = TRUE, ...) {
   vars <- all.vars(x)
   if(length(vars) > 1) warning("More than one molecule in formula. Did you mean as_molecules()?")
   m <- parse_molecules(vars[1], validate = FALSE)[[1]]
-  if(validate) validate_molecule(m)
+  if(validate) validate_molecule_single(m)
   m
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 as_molecules.molecules <- function(x, ...) {
   x
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-as_molecules.molecule <- function(x, validate = TRUE, ...) {
+as_molecules.molecule_single <- function(x, validate = TRUE, ...) {
   molecules(x, validate = validate)
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 as_molecules.character <- function(x, validate = TRUE, ...) {
   parse_molecules(x)
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 as_molecules.formula <- function(x, validate = TRUE, ...) {
   parse_molecules(all.vars(x), validate = validate)
 }
 
+#' Combine, subset molecule(s) objects
+#'
+#' @param x A molecules object
+#' @param i The index to extract
+#' @param ... Objects to combine
+#'
+#' @return A molecules object
+#' @export
+#'
+#' @examples
+#' c(as_molecules(~H2O), as_molecules(~`NH3`))
+#' mols <- as_molecules(c("H2O", "NH3"))
+#' mols[1]
+#'
+c.molecule_single <- function(...) {
+  do.call(c.molecules, lapply(list(...), as_molecules))
+}
+
+#' @rdname c.molecule_single
+#' @export
+c.molecules <- function(...) {
+  args <- lapply(list(...), unclass)
+  new_molecules(do.call(c, args))
+}
+
+#' @rdname c.molecule_single
+#' @export
+`[.molecules` <- function(x, i, ...) {
+  new_molecules(unclass(x)[i, ...])
+}
 
 #' Create, validate molecule objects
 #'
@@ -104,36 +134,36 @@ as_molecules.formula <- function(x, validate = TRUE, ...) {
 #' @param charge An optional charge to assign to the molecule
 #' @param mass A mass to assign the molecule
 #'
-#' @return An double vector with class "molecule"
+#' @return An double vector with class "molecule_single"
 #' @export
 #'
 #' @examples
-#' m <- new_molecule(c(H=2, O=1), charge = 0L, mass = 18.01528)
-#' validate_molecule(m)
-#' is_molecule(m)
+#' m <- new_molecule_single(c(H=2, O=1), charge = 0L, mass = 18.01528)
+#' validate_molecule_single(m)
+#' is_molecule_single(m)
 #'
-new_molecule <- function(x, charge = 0L, mass = NA_real_) {
+new_molecule_single <- function(x, charge = 0L, mass = NA_real_) {
   if(!is.double(x)) stop("x must be a double vector")
-  structure(x, charge = charge, mass = mass, class = "molecule")
+  structure(x, charge = charge, mass = mass, class = "molecule_single")
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 new_molecules <- function(x) {
   if(!is.list(x)) stop("x must be of type list")
   structure(x, class = "molecules")
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-NA_molecule_ <- new_molecule(stats::setNames(numeric(0), character(0)),
-                             charge = NA_integer_, mass = NA_real_)
+NA_molecule_ <- new_molecule_single(stats::setNames(numeric(0), character(0)),
+                                    charge = NA_integer_, mass = NA_real_)
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-validate_molecule <- function(x) {
+validate_molecule_single <- function(x) {
   # check class
-  if(!is_molecule(x)) stop("x must be of type molecule")
+  if(!is_molecule_single(x)) stop("x must be of type molecule")
   # check base type
   if(!is.double(x)) stop("x must be a double vector")
   # check names
@@ -153,11 +183,11 @@ validate_molecule <- function(x) {
   invisible(x)
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 validate_molecules <- function(x) {
   if(!is.list(x)) stop("x must be a list")
-  validation <- lapply(x, function(x) try(validate_molecule(x), silent = TRUE))
+  validation <- lapply(x, function(x) try(validate_molecule_single(x), silent = TRUE))
   val_error <- vapply(validation, inherits, "try-error", FUN.VALUE = logical(1))
   if(any(val_error)) stop("Molecules at positions ",
                           paste(which(val_error), collapse = ", "),
@@ -165,13 +195,13 @@ validate_molecules <- function(x) {
   invisible(x)
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
-is_molecule <- function(x) {
-  inherits(x, "molecule")
+is_molecule_single <- function(x) {
+  inherits(x, "molecule_single")
 }
 
-#' @rdname molecule
+#' @rdname molecules
 #' @export
 is_molecules <- function(x) {
   inherits(x, "molecules")
@@ -186,17 +216,17 @@ is_molecules <- function(x) {
 #' @export
 #'
 #' @examples
-#' print(as_molecule(~H2O))
+#' print(as_molecule_single(~H2O))
 #' print(as_molecules(~H2O))
 #' as.character(NA_molecule_)
 #' as.character(molecules(NA_molecule_))
 #'
-print.molecule <- function(x, ...) {
-  cat("<molecule>", as.character(x))
+print.molecule_single <- function(x, ...) {
+  cat("<molecule_single>", as.character(x))
   invisible(x)
 }
 
-#' @rdname print.molecule
+#' @rdname print.molecule_single
 #' @export
 print.molecules <- function(x, ...) {
   cat("<molecules>\n")
@@ -204,25 +234,25 @@ print.molecules <- function(x, ...) {
   invisible(x)
 }
 
-#' @rdname print.molecule
+#' @rdname print.molecule_single
 #' @export
-as.character.molecule <- function(x, ...) {
+as.character.molecule_single <- function(x, ...) {
   if(identical(x, NA_molecule_)) return("<NA_molecule_>")
   counts <- ifelse(x == 1, "", unclass(x)) # will be character
   charge <- charge(x)
   charge <- ifelse(charge == 1, "+",
                    ifelse(charge == -1, "-",
-                          ifelse(charge > 0, paste("+", charge),
+                          ifelse(charge > 0, paste0("+", charge),
                                  ifelse(charge == 0, "", charge))))
   mat <- rbind(names(x), counts)
   dim(mat) <- NULL
   paste0(paste(mat, collapse = ""), charge)
 }
 
-#' @rdname print.molecule
+#' @rdname print.molecule_single
 #' @export
 as.character.molecules <- function(x, ...) {
-  vapply(x, as.character.molecule, character(1))
+  vapply(x, as.character.molecule_single, character(1))
 }
 
 
@@ -235,7 +265,7 @@ as.character.molecules <- function(x, ...) {
 #'
 #' @examples
 #' mass("H")
-#' m <- as_molecule("H2O")
+#' m <- as_molecule_single("H2O")
 #' mass(m)
 #'
 mass <- function(x) UseMethod("mass")
@@ -248,7 +278,7 @@ mass.default <- function(x) {
 
 #' @rdname mass
 #' @export
-mass.molecule <- function(x) {
+mass.molecule_single <- function(x) {
   attr(x, "mass")
 }
 
@@ -270,7 +300,7 @@ charge.default <- function(x) {
 
 #' @rdname mass
 #' @export
-charge.molecule <- function(x) {
+charge.molecule_single <- function(x) {
   attr(x, "charge")
 }
 
@@ -298,7 +328,7 @@ parse_molecules <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>",
   mol_list <- lapply(seq_along(matches), function(i) {
     mol_string <- txt[i]
     # check for NA
-    if(is.na(mol_string) || mol_na) return(NA_molecule_)
+    if(is.na(mol_string) || mol_na[i]) return(NA_molecule_)
     match <- matches[[i]]
 
     # check for full match
@@ -319,7 +349,7 @@ parse_molecules <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>",
     els <- stats::setNames(counts, symbols)
 
     # return els, classed as a molecule
-    new_molecule(els, charge = charges[i], mass = sum(elmass(symbols) * counts))
+    new_molecule_single(els, charge = charges[i], mass = sum(elmass(symbols) * counts))
   })
 
   # return mol_list classed as molecules
