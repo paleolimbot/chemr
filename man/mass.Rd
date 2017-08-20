@@ -4,11 +4,11 @@
 \alias{mass}
 \alias{mass.default}
 \alias{mass.molecule_single}
-\alias{mass.molecules}
+\alias{mass.mol}
 \alias{charge}
 \alias{charge.default}
 \alias{charge.molecule_single}
-\alias{charge.molecules}
+\alias{charge.mol}
 \title{Access properties of a molecule object}
 \usage{
 mass(x)
@@ -17,7 +17,7 @@ mass(x)
 
 \method{mass}{molecule_single}(x)
 
-\method{mass}{molecules}(x)
+\method{mass}{mol}(x)
 
 charge(x)
 
@@ -25,7 +25,7 @@ charge(x)
 
 \method{charge}{molecule_single}(x)
 
-\method{charge}{molecules}(x)
+\method{charge}{mol}(x)
 }
 \arguments{
 \item{x}{A molecule object or symbol string}

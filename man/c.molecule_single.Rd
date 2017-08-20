@@ -2,32 +2,32 @@
 % Please edit documentation in R/molecule.R
 \name{c.molecule_single}
 \alias{c.molecule_single}
-\alias{c.molecules}
-\alias{[.molecules}
+\alias{c.mol}
+\alias{[.mol}
 \title{Combine, subset molecule(s) objects}
 \usage{
 \method{c}{molecule_single}(...)
 
-\method{c}{molecules}(...)
+\method{c}{mol}(...)
 
-\method{[}{molecules}(x, i, ...)
+\method{[}{mol}(x, i, ...)
 }
 \arguments{
 \item{...}{Objects to combine}
 
-\item{x}{A molecules object}
+\item{x}{A mol object}
 
 \item{i}{The index to extract}
 }
 \value{
-A molecules object
+A mol object
 }
 \description{
 Combine, subset molecule(s) objects
 }
 \examples{
-c(as_molecules(~H2O), as_molecules(~`NH3`))
-mols <- as_molecules(c("H2O", "NH3"))
+c(as_mol(~H2O), as_mol(~`NH3`))
+mols <- as_mol(c("H2O", "NH3"))
 mols[1]
 
 }

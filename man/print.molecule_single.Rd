@@ -2,18 +2,18 @@
 % Please edit documentation in R/molecule.R
 \name{print.molecule_single}
 \alias{print.molecule_single}
-\alias{print.molecules}
+\alias{print.mol}
 \alias{as.character.molecule_single}
-\alias{as.character.molecules}
+\alias{as.character.mol}
 \title{Coerce molecule(s) to character}
 \usage{
 \method{print}{molecule_single}(x, ...)
 
-\method{print}{molecules}(x, ...)
+\method{print}{mol}(x, ...)
 
 \method{as.character}{molecule_single}(x, ...)
 
-\method{as.character}{molecules}(x, ...)
+\method{as.character}{mol}(x, ...)
 }
 \arguments{
 \item{x}{A molecule(s) object}
@@ -28,8 +28,8 @@ Coerce molecule(s) to character
 }
 \examples{
 print(as_molecule_single(~H2O))
-print(as_molecules(~H2O))
+print(as_mol(~H2O))
 as.character(NA_molecule_)
-as.character(molecules(NA_molecule_))
+as.character(mol(NA_molecule_))
 
 }
