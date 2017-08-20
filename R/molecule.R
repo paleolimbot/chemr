@@ -179,7 +179,7 @@ validate_molecule_single <- function(x) {
   if(!is.double(attr(x, "mass"))) stop("attr(x, 'mass') is not a double")
 
   # check symbols
-  bad_symbols <- names(x)[!is_symbol(names(x))]
+  bad_symbols <- names(x)[!is_element(names(x))]
   if(length(bad_symbols) > 0) stop("names(x) contained the following bad symbols: ",
                                    paste(bad_symbols, collpase = ", "))
 

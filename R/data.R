@@ -13,3 +13,6 @@
 #'
 #' @source \url{https://en.wikipedia.org/wiki/List_of_chemical_elements}
 "pt"
+
+# load the periodic tibble in the package namespace
+data("pt", envir = environment())
