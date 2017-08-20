@@ -62,6 +62,7 @@ as_molecule_single.mol <- function(x, ...) {
 #' @export
 as_molecule_single.character <- function(x, validate = TRUE, ...) {
   if(length(x) > 1) warning("More than one molecule in x. Did you mean as_mol()?")
+  if(!is.logical(validate)) stop("Invalid value for validate: ", validate)
   m <- parse_mol(x[1], validate = FALSE)[[1]]
   if(validate) validate_molecule_single(m)
   m
@@ -92,7 +93,8 @@ as_mol.molecule_single <- function(x, validate = TRUE, ...) {
 #' @rdname mol
 #' @export
 as_mol.character <- function(x, validate = TRUE, ...) {
-  parse_mol(x)
+  if(!is.logical(validate)) stop("Invalid value for validate: ", validate)
+  parse_mol(x, validate = validate)
 }
 
 #' @rdname mol
