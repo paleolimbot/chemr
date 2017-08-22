@@ -84,6 +84,7 @@ test_that("subsetting a mol object returns a mol object", {
   expect_is(mol_objs[1], "mol")
   expect_is(mol_objs[1:4], "mol")
   expect_is(mol_objs[mols == "H2O"], "mol")
+  expect_true(is.na(mol_objs[NA_integer_]))
 })
 
 test_that("combining molecule(s) returns a mol object", {

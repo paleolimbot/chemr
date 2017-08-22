@@ -135,7 +135,10 @@ c.mol <- function(...) {
 #' @rdname c.molecule_single
 #' @export
 `[.mol` <- function(x, i, ...) {
-  new_mol(unclass(x)[i, ...])
+  l <- unclass(x)[i, ...]
+  # NULLs should be NA_molecule
+  l[vapply(l, is.null, logical(1))] <- list(NA_molecule_)
+  new_mol(l)
 }
 
 #' @rdname c.molecule_single

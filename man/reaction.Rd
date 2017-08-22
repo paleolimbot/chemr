@@ -5,6 +5,7 @@
 \alias{as_reaction}
 \alias{as.reaction}
 \alias{as_reaction.reaction}
+\alias{as_reaction.mol}
 \alias{as_reaction.formula}
 \alias{as_reaction.character}
 \title{Create reaction objects}
@@ -16,6 +17,8 @@ as_reaction(x, ...)
 as.reaction(x, ...)
 
 \method{as_reaction}{reaction}(x, ...)
+
+\method{as_reaction}{mol}(x, coefficients, validate = TRUE, ...)
 
 \method{as_reaction}{formula}(x, validate = TRUE, ...)
 
@@ -35,6 +38,8 @@ as.reaction(x, ...)
 \item{x}{An object to convert to a reaction object}
 
 \item{...}{Passed to/from methods}
+
+\item{coefficients}{Coefficients corresponding to as_reaction input}
 }
 \value{
 A reaction object

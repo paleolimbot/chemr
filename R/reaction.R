@@ -7,6 +7,7 @@
 #' @param counts_rhs The counts for molecules on the righthand side
 #' @param validate Flag to validate molecules in the reaction
 #' @param x An object to convert to a reaction object
+#' @param coefficients Coefficients corresponding to as_reaction input
 #' @param ... Passed to/from methods
 #'
 #' @return A reaction object
@@ -49,6 +50,17 @@ as.reaction <- function(x, ...) as_reaction(x, ...)
 #' @export
 as_reaction.reaction <- function(x, ...) {
   x
+}
+
+#' @rdname reaction
+#' @export
+as_reaction.mol <- function(x, coefficients, validate = TRUE, ...) {
+  if(length(coefficients) != length(x)) {
+    stop("length(coefficients) is not equal to length(x)")
+  }
+  r <- new_reaction(list(mol = x, coefficients = coefficients))
+  if(validate) validate_reaction(r)
+  r
 }
 
 #' @rdname reaction
@@ -197,4 +209,65 @@ validate_reaction <- function(x) {
 #' @export
 is_reaction <- function(x) {
   inherits(x, "reaction")
+}
+
+#' Subset, combine reaction objects
+#'
+#' @param x A reaction object
+#' @param i The index
+#' @param ... Ignored
+#'
+#' @return A reaction object
+#' @export
+#' @rdname reactionsubset
+#'
+#'
+#' @examples
+#' r <- as_reaction("2H2 + O2 = 2H2O")
+#' lhs(r)
+#' rhs(r)
+#'
+`[.reaction` <- function(x, i, ...) {
+  new_reaction(list(mol = x$mol[i], coefficients = x$coefficients[i]))
+}
+
+#' @export
+#' @rdname reactionsubset
+lhs <- function(x) {
+  x[x$coefficients >= 0]
+}
+
+#' @export
+#' @rdname reactionsubset
+rhs <- function(x) {
+  x[x$coefficients < 0]
+}
+
+#' Coerce reactions to a character vector
+#'
+#' @param x A reaction object
+#' @param ... Ignored
+#'
+#' @return A character vector
+#' @export
+#'
+#' @examples
+#' r <- as_reaction(2*H2 + O2 ~ 2*H2O)
+#' as.character(r)
+#' print(r)
+#'
+as.character.reaction <- function(x, ...) {
+  sides <- vapply(list(lhs(x), rhs(x)), function(r) {
+    coeffs <- abs(r$coefficients)
+    coeffs <- ifelse(coeffs == 1, "", as.character(coeffs))
+    paste0(coeffs, as.character(r$mol), collapse = " + ")
+  }, character(1))
+  paste(sides, collapse = " = ")
+}
+
+#' @rdname as.character.reaction
+#' @export
+print.reaction <- function(x, ...) {
+  cat("<reaction>", as.character(x))
+  invisible(x)
 }
