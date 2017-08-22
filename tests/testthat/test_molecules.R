@@ -161,6 +161,9 @@ test_that("molecule_single arithmetic works as intended", {
   expect_true(is.na(m1 + NA_molecule_))
   expect_true(is.na(NA_molecule_ + m1))
   expect_true(is.na(NA_molecule_ + NA_molecule_))
+  # unary operator
+  expect_identical(+m1, m1)
+
 
 
   # equality operator
@@ -201,6 +204,8 @@ test_that("mol arithmetic works as intended", {
   expect_length(mols + mols, length(mols))
   # communicativity
   expect_equal(length(mol_len_1 + mols), length(mols + mol_len_1))
+  # unary operator (doesn't work for mols!)
+  # expect_identical(+mols, mols)
 
   # mols + mol_single # doesn't work, citing 'incompatible methods'
 

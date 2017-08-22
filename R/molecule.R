@@ -403,6 +403,7 @@ charge.mol <- function(x) {
 #' @rdname arithmetic
 #' @export
 `+.molecule_single` <- function(x, y) {
+  if(missing(y)) return(x) # unary operator
   # turn X,Y into a molecule_single
   x <- as_molecule_single(x)
   y <- as_molecule_single(y)
