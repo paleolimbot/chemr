@@ -4,6 +4,8 @@
 \alias{c.molecule_single}
 \alias{c.mol}
 \alias{[.mol}
+\alias{rep.molecule_single}
+\alias{rep.mol}
 \title{Combine, subset molecule(s) objects}
 \usage{
 \method{c}{molecule_single}(...)
@@ -11,6 +13,10 @@
 \method{c}{mol}(...)
 
 \method{[}{mol}(x, i, ...)
+
+\method{rep}{molecule_single}(x, times, ...)
+
+\method{rep}{mol}(x, times, ...)
 }
 \arguments{
 \item{...}{Objects to combine}
@@ -18,6 +24,8 @@
 \item{x}{A mol object}
 
 \item{i}{The index to extract}
+
+\item{times}{The number of times to repeat the molecule}
 }
 \value{
 A mol object

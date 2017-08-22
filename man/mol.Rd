@@ -17,6 +17,8 @@
 \alias{as_mol.formula}
 \alias{new_mol}
 \alias{NA_molecule_}
+\alias{is.na.molecule_single}
+\alias{is.na.mol}
 \alias{validate_molecule_single}
 \alias{validate_mol}
 \alias{is_molecule_single}
@@ -53,6 +55,10 @@ as.mol(x, ...)
 new_mol(x)
 
 NA_molecule_
+
+\method{is.na}{molecule_single}(x)
+
+\method{is.na}{mol}(x)
 
 validate_molecule_single(x)
 

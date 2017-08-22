@@ -25,7 +25,10 @@ mol <- function(..., validate = TRUE) {
 molecule_single <- function(..., charge = 0L, validate = TRUE) {
   x <- c(...)
   x <- stats::setNames(as.double(x), names(x))
+  # NA counts are 1
   x[is.na(x)] <- 1
+  # zero counts are removed
+  x <- x[x != 0]
   if(is.null(names(x))) stop("Arguments to molecule must be named")
   m <- new_molecule_single(x, charge = as.integer(charge),
                     mass = sum(x * elmass(names(x))))
@@ -107,6 +110,7 @@ as_mol.formula <- function(x, validate = TRUE, ...) {
 #'
 #' @param x A mol object
 #' @param i The index to extract
+#' @param times The number of times to repeat the molecule
 #' @param ... Objects to combine
 #'
 #' @return A mol object
@@ -132,6 +136,18 @@ c.mol <- function(...) {
 #' @export
 `[.mol` <- function(x, i, ...) {
   new_mol(unclass(x)[i, ...])
+}
+
+#' @rdname c.molecule_single
+#' @export
+rep.molecule_single <- function(x, times, ...) {
+  new_mol(rep(list(x), times))
+}
+
+#' @rdname c.molecule_single
+#' @export
+rep.mol <- function(x, times, ...) {
+  new_mol(rep(unclass(x), times))
 }
 
 #' Create, validate molecule objects
@@ -167,6 +183,18 @@ NA_molecule_ <- new_molecule_single(stats::setNames(numeric(0), character(0)),
 
 #' @rdname mol
 #' @export
+is.na.molecule_single <- function(x) {
+  identical(x, NA_molecule_)
+}
+
+#' @rdname mol
+#' @export
+is.na.mol <- function(x) {
+  vapply(x, identical, NA_molecule_, FUN.VALUE = logical(1))
+}
+
+#' @rdname mol
+#' @export
 validate_molecule_single <- function(x) {
   # check class
   if(!is_molecule_single(x)) stop("x must be of type molecule")
@@ -184,6 +212,9 @@ validate_molecule_single <- function(x) {
   bad_symbols <- names(x)[!is_element(names(x))]
   if(length(bad_symbols) > 0) stop("names(x) contained the following bad symbols: ",
                                    paste(bad_symbols, collpase = ", "))
+
+  # check counts
+  if(any(x <= 0)) stop("All counts must be > 0")
 
   # return x, invisibly
   invisible(x)
@@ -244,7 +275,7 @@ print.mol <- function(x, ...) {
 #' @export
 as.character.molecule_single <- function(x, ...) {
   if(identical(x, NA_molecule_)) return("<NA_molecule_>")
-  counts <- ifelse(x == 1, "", unclass(x)) # will be character
+  counts <- ifelse(unclass(x) == 1, "", unclass(x)) # will be character
   charge <- charge(x)
   charge <- ifelse(charge == 1, "+",
                    ifelse(charge == -1, "-",
@@ -316,8 +347,181 @@ charge.mol <- function(x) {
   vapply(x, attr, "charge", FUN.VALUE = integer(1))
 }
 
+
+#' Molecule arithmetic
+#'
+#' @param x A mol object
+#' @param y The object with which to perform arithmetic
+#' @param ... Objects to combine
+#'
+#' @return A mol object
+#' @export
+#' @rdname arithmetic
+#'
+#' @examples
+#' m <- as_mol("H2O")
+#' m*2
+#' m + as_mol("H+")
+#'
+`*.molecule_single` <- function(x, y) {
+  # NA x or y results in NA_molecule_ output
+  if(is.na(x) || is.na(y)) return(NA_molecule_)
+  # multiply coefficients, charge, mass by y
+  # if x is a mol_single:
+  if(is_molecule_single(x)) {
+    m <- new_molecule_single(unclass(x) * y,
+                             charge = charge(x) * y, mass = mass(x) * y)
+  } else {
+    m <- new_molecule_single(unclass(y) * x,
+                             charge = charge(y) * x, mass = mass(y) * x)
+  }
+
+  # remove zero counts
+  remove_zero_counts.molecule_single(m)
+}
+
+#' @rdname arithmetic
+#' @export
+`/.molecule_single` <- function(x, y) {
+  # NA x or y results in NA_molecule_ output
+  if(is.na(x) || is.na(y)) return(NA_molecule_)
+  # divide coefficients, charge, mass by y
+  if(!is_molecule_single(x)) stop("Can't divide by a molecule_single")
+  if(!is.numeric(y)) stop("Can't divide a molecule_single by an object of type ", class(y)[1])
+  # zero division results in NA molecule
+  if(y == 0) {
+    warning("Divide by zero in /.molecule_single -> NA_molecule")
+    return(NA_molecule_)
+  }
+  new_molecule_single(unclass(x) / y,
+                      charge = charge(x) / y, mass = mass(x) / y)
+}
+
+#' @rdname arithmetic
+#' @export
+`+.molecule_single` <- function(x, y) {
+  # turn X,Y into a molecule_single
+  x <- as_molecule_single(x)
+  y <- as_molecule_single(y)
+  # NA x or y results in NA_molecule_ output
+  if(is.na(x) || is.na(y)) return(NA_molecule_)
+  # combine raw coefficient vectors, add charges, masses
+  m <- new_molecule_single(c(unclass(x), unclass(y)),
+                           charge = charge(x) + charge(y),
+                           mass = mass(x) + mass(y))
+  # remove zero counts
+  remove_zero_counts.molecule_single(m)
+}
+
+#' @rdname arithmetic
+#' @export
+combine_molecules <- function(...) {
+  vals <- list(...)
+  if(any(vapply(vals, is_mol, logical(1)))) {
+    # vectorize using mapply
+    margs <- c(list(combine_molecules), lapply(vals, as_mol), list(SIMPLIFY = FALSE))
+    return(new_mol(do.call(mapply, margs)))
+  }
+  mols <- mol(..., validate = FALSE)
+  if(any(is.na(mols))) return(NA_molecule_)
+  unclassed <- lapply(mols, unclass)
+  m <- new_molecule_single(do.call(c, unclassed),
+                           charge = sum(charge(mols)),
+                           mass = sum(mass(mols)))
+  # remove zero counts
+  remove_zero_counts.molecule_single(m)
+}
+
+#' @rdname arithmetic
+#' @export
+`==.molecule_single` <- function(x, y) {
+  # turn X,Y into a molecule_single
+  x <- as_molecule_single(x)
+  y <- as_molecule_single(y)
+  # combine raw coefficient vectors, add charges, masses
+  bare_x <- unname(unclass(x))
+  bare_y <- unname(unclass(y))
+  all(names(x) == names(y)) && all(bare_x == bare_y) && (charge(x) == charge(y))
+}
+
+#' @rdname arithmetic
+#' @export
+`*.mol` <- function(x, y) {
+  result <- mapply(`*.molecule_single`, x, y, SIMPLIFY = FALSE)
+  new_mol(result)
+}
+
+#' @rdname arithmetic
+#' @export
+`/.mol` <- function(x, y) {
+  result <- mapply(`/.molecule_single`, x, y, SIMPLIFY = FALSE)
+  new_mol(result)
+}
+
+#' @rdname arithmetic
+#' @export
+`+.mol` <- function(x, y) {
+  result <- mapply(`+.molecule_single`, x, y, SIMPLIFY = FALSE)
+  new_mol(result)
+}
+
+#' @rdname arithmetic
+#' @export
+`==.mol` <- function(x, y) {
+  mapply(`==.molecule_single`, x, y, SIMPLIFY = TRUE)
+}
+
+
+#' Simplify chemr objects
+#'
+#' @param x A mol, molecule_single, or reaction object
+#' @param ... Unused
+#'
+#' @return An object with the same class as x
+#' @export
+#'
+#' @examples
+#' simplify(as_mol("CHOOOH"))
+#'
+simplify <- function(x, ...) UseMethod("simplify")
+
+#' @rdname simplify
+#' @export
+remove_zero_counts <- function(x, ...) UseMethod("remove_zero_counts")
+
+#' @rdname simplify
+#' @export
+simplify.molecule_single <- function(x, ...) {
+  unique_names <- unique(names(x))
+  obj <- tapply(x, names(x), sum)[unique_names]
+  if(length(obj) == 0) {
+    obj <- stats::setNames(numeric(0), character(0))
+  } else {
+    obj <- stats::setNames(as.double(obj), names(obj))
+  }
+  new_molecule_single(obj, charge = charge(x), mass = mass(x))
+}
+
+#' @rdname simplify
+#' @export
+remove_zero_counts.molecule_single <- function(x, ...) {
+  new_molecule_single(x[x != 0], charge = charge(x), mass = mass(x))
+}
+
+#' @rdname simplify
+#' @export
+simplify.mol <- function(x, ...) {
+  new_mol(lapply(x, simplify.molecule_single))
+}
+
+#' @rdname simplify
+#' @export
+remove_zero_counts.mol <- function(x, ...) {
+  new_mol(lapply(x, remove_zero_counts.molecule_single))
+}
+
 # internal function to parse molecule text
-.el_regex <- "([A-Z][a-z]{0,2})([0-9]*)"
+.el_regex <- "([A-Z][a-z]{0,2})([0-9.]*)"
 .charge_regex <- "([-+][0-9]*)$"
 
 parse_mol <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>", "")) {
@@ -351,6 +555,11 @@ parse_mol <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>", "")) 
     counts <- as.double(match[, 3, drop = TRUE])
     counts[is.na(counts)] <- 1
 
+    # if counts == 0, it should be removed
+    non_zero_counts <- counts != 0
+    counts <- counts[non_zero_counts]
+    symbols <- symbols[non_zero_counts]
+
     # els is a named version of counts
     els <- stats::setNames(counts, symbols)
 
@@ -363,3 +572,5 @@ parse_mol <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>", "")) 
   if(validate) validate_mol(ml)
   ml
 }
+
+
