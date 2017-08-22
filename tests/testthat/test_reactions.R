@@ -42,3 +42,18 @@ test_that("reaction charater printing works as intended", {
   expect_output(print(robj), "<reaction>.*")
   expect_identical(print(robj), robj)
 })
+
+test_that("reaction simplification works as intended", {
+  r <- as_reaction("NH3 + H+ + H2O = H3O+ + NH3")
+  expect_equal(simplify(r)$mol, unique(r$mol))
+  expect_is(simplify(r), "reaction")
+
+  r2 <- as_reaction("0NH3 + H+ + H2O = H3O+")
+  expect_is(remove_zero_counts(r2), "reaction")
+  expect_equal(as.character(remove_zero_counts(r2)$mol), c("H+", "H2O", "H3O+"))
+
+  r3 <- as_reaction(as_mol(c("H2O", "H+", NA_character_)),
+                           coefficients = c(1, 2, -3))
+  expect_is(remove_zero_counts(r3), "reaction")
+  expect_equal(as.character(remove_zero_counts(r3)$mol), c("H2O", "H+"))
+})

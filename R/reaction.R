@@ -271,3 +271,35 @@ print.reaction <- function(x, ...) {
   cat("<reaction>", as.character(x))
   invisible(x)
 }
+
+
+#' Simplify reaction objects
+#'
+#' @param x A reaction object
+#' @param ... ignored
+#'
+#' @return A reaction object
+#' @export
+#'
+#' @examples
+#' r <- as_reaction("NH3 + H+ + H2O = H3O+ + NH3")
+#' simplify(r)
+#'
+#' r2 <- as_reaction("0NH3 + H+ + H2O = H3O+")
+#' remove_zero_counts(r2)
+#'
+simplify.reaction <- function(x, ...) {
+  unique_mols <- unique(x$mol)
+  unique_coefficients <- vapply(unique_mols, function(m) {
+    sum(x$coefficients[x$mol == as_mol(m)])
+  }, numeric(1))
+  new_reaction(list(mol = unique_mols,
+                    coefficients = unique_coefficients))
+}
+
+#' @rdname simplify.reaction
+#' @export
+remove_zero_counts.reaction <- function(x, ...) {
+  x[!is.na(x$mol) & (x$coefficients != 0)]
+}
+
