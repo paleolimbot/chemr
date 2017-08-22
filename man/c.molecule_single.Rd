@@ -6,6 +6,7 @@
 \alias{[.mol}
 \alias{rep.molecule_single}
 \alias{rep.mol}
+\alias{unique.mol}
 \title{Combine, subset molecule(s) objects}
 \usage{
 \method{c}{molecule_single}(...)
@@ -17,6 +18,8 @@
 \method{rep}{molecule_single}(x, times, ...)
 
 \method{rep}{mol}(x, times, ...)
+
+\method{unique}{mol}(x, ...)
 }
 \arguments{
 \item{...}{Objects to combine}

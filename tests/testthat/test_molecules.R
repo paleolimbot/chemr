@@ -23,8 +23,8 @@ test_that("molecule character parsing works as intended", {
   # NA handling
   expect_identical(as_molecule_single(NA_character_), NA_molecule_)
   expect_identical(as_molecule_single("NA"), NA_molecule_)
-  expect_identical(as_molecule_single("<NA_molecule_>"), NA_molecule_)
-  expect_silent(as_mol(c("H2O", "<NA_molecule_>")))
+  expect_identical(as_molecule_single(NA_character_), NA_molecule_)
+  expect_silent(as_mol(c("H2O", NA_character_)))
 
   # zero count handling
   expect_identical(as_molecule_single("H2O0"), molecule_single(H=2))
@@ -69,17 +69,18 @@ test_that("the print method works for molecule and mol", {
 })
 
 test_that("as.mol and as_mol are identical", {
-  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
+  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
   expect_identical(as.mol(mols), as_mol(mols))
 })
 
 test_that("converting mol to strings works as expected", {
-  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
-  expect_identical(as.character(mols), mols)
+  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
+  mol_objs <- as_mol(mols)
+  expect_identical(as.character(mol_objs), mols)
 })
 
 test_that("subsetting a mol object returns a mol object", {
-  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
+  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
   mol_objs <- as_mol(mols)
   expect_is(mol_objs[1], "mol")
   expect_is(mol_objs[1:4], "mol")
@@ -89,7 +90,7 @@ test_that("subsetting a mol object returns a mol object", {
 
 test_that("combining molecule(s) returns a mol object", {
   mols1 <- c("H2O", "H3O+", "H+", "Mg+2")
-  mols2 <- c("O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
+  mols2 <- c("O-2", "O2", "CH3COOH", "Cl-", NA_character_)
   mol_objs1 <- as_mol(mols1)
   mol_objs2 <- as_mol(mols2)
   silica <- as_molecule_single(~SiO2)
@@ -105,7 +106,7 @@ test_that("combining molecule(s) returns a mol object", {
 
 test_that("rep works for molecule objects", {
   m1 <- as_molecule_single(~H2O)
-  mols <- as_mol(c("O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>"))
+  mols <- as_mol(c("O-2", "O2", "CH3COOH", "Cl-", NA_character_))
 
   # check class
   expect_is(rep(m1, 3), "mol")
@@ -118,7 +119,14 @@ test_that("rep works for molecule objects", {
   # check values
   expect_equal(as.character(rep(m1, 3)), c("H2O", "H2O", "H2O"))
   expect_equal(as.character(rep(mols, 3)),
-               rep(c("O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>"), 3))
+               rep(c("O-2", "O2", "CH3COOH", "Cl-", NA_character_), 3))
+})
+
+test_that("unique() works for mol vectors", {
+  mols <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
+  mol_objs <- as_mol(mols)
+  expect_is(unique(mol_objs), "mol")
+  expect_identical(unique(rep(mol_objs, 2)), mol_objs)
 })
 
 test_that("is.na() works for molecule_single and mol objects", {
@@ -187,7 +195,7 @@ test_that("molecule_single arithmetic works as intended", {
 })
 
 test_that("mol arithmetic works as intended", {
-  mol_text <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
+  mol_text <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
   mol_single <- as_molecule_single(~H2O)
   mol_len_1 <- as_mol(~H2O)
   mols <- as_mol(mol_text)
@@ -217,7 +225,7 @@ test_that("mol arithmetic works as intended", {
 })
 
 test_that("combine_molecules works for both molecule_single and mol objects", {
-  mol_text <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", "<NA_molecule_>")
+  mol_text <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", "Cl-", NA_character_)
   mol_single <- as_molecule_single(~H2O)
   mol_len_1 <- as_mol(~H2O)
   mols <- as_mol(mol_text)

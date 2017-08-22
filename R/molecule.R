@@ -153,6 +153,12 @@ rep.mol <- function(x, times, ...) {
   new_mol(rep(unclass(x), times))
 }
 
+#' @rdname c.molecule_single
+#' @export
+unique.mol <- function(x, ...) {
+  new_mol(NextMethod())
+}
+
 #' Create, validate molecule objects
 #'
 #' @param x A double vector or molecule object
@@ -277,7 +283,7 @@ print.mol <- function(x, ...) {
 #' @rdname print.molecule_single
 #' @export
 as.character.molecule_single <- function(x, ...) {
-  if(identical(x, NA_molecule_)) return("<NA_molecule_>")
+  if(identical(x, NA_molecule_)) return(NA_character_)
   counts <- ifelse(unclass(x) == 1, "", unclass(x)) # will be character
   charge <- charge(x)
   charge <- ifelse(charge == 1, "+",
@@ -528,7 +534,7 @@ remove_zero_counts.mol <- function(x, ...) {
 .el_regex <- "([A-Z][a-z]{0,2})([0-9.]*)"
 .charge_regex <- "([-+][0-9]*)$"
 
-parse_mol <- function(txt, validate = TRUE, na = c("NA", "<NA_molecule_>", "")) {
+parse_mol <- function(txt, validate = TRUE, na = c("NA", "")) {
   mol_na <- txt %in% na
   matches <- stringr::str_match_all(txt, .el_regex)
   # process charges
