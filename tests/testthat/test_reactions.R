@@ -57,3 +57,13 @@ test_that("reaction simplification works as intended", {
   expect_is(remove_zero_counts(r3), "reaction")
   expect_equal(as.character(remove_zero_counts(r3)$mol), c("H2O", "H+"))
 })
+
+test_that("is_balanced() checks for a balanced reaction", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  expect_true(is_balanced(r1))
+  r2 <- as_reaction(O2 + H2 ~ 2*H2O)
+  expect_false(is_balanced(r2))
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+  expect_true(is_balanced(r3, charge = FALSE))
+  expect_false(is_balanced(r3, charge = TRUE))
+})

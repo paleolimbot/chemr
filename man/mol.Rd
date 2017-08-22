@@ -28,7 +28,7 @@
 \usage{
 mol(..., validate = TRUE)
 
-molecule_single(..., charge = 0L, validate = TRUE)
+molecule_single(..., charge = 0, validate = TRUE)
 
 as_molecule_single(x, ...)
 

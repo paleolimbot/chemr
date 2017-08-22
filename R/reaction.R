@@ -303,3 +303,34 @@ remove_zero_counts.reaction <- function(x, ...) {
   x[!is.na(x$mol) & (x$coefficients != 0)]
 }
 
+#' Balance reactions
+#'
+#' @param x A reaction object
+#' @param charge Balance charge?
+#'
+#' @return A balanced reaction or logical describing if the reaction is balanced
+#' @export
+#'
+#' @examples
+#' is_balanced(O2 + 2*H2 ~ 2*H2O)
+#' is_balanced(O2 + H2 ~ 2*H2O)
+#' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = FALSE)
+#' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
+#'
+is_balanced <- function(x, charge = TRUE) {
+  x <- as_reaction(x)
+  all_mols <- x$mol * x$coefficients
+  result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)))
+  if(charge) {
+    (length(result) == 0) && (charge(result) == 0)
+  } else {
+    length(result) == 0
+  }
+}
+
+#' @rdname is_balanced
+#' @export
+balance <- function(x, charge = TRUE) {
+  stop("not implemented")
+}
+

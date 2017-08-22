@@ -22,7 +22,7 @@ mol <- function(..., validate = TRUE) {
 
 #' @rdname mol
 #' @export
-molecule_single <- function(..., charge = 0L, validate = TRUE) {
+molecule_single <- function(..., charge = 0, validate = TRUE) {
   x <- c(...)
   x <- stats::setNames(as.double(x), names(x))
   # NA counts are 1
@@ -30,7 +30,7 @@ molecule_single <- function(..., charge = 0L, validate = TRUE) {
   # zero counts are removed
   x <- x[x != 0]
   if(is.null(names(x))) stop("Arguments to molecule must be named")
-  m <- new_molecule_single(x, charge = as.integer(charge),
+  m <- new_molecule_single(x, charge = as.numeric(charge),
                     mass = sum(x * elmass(names(x))))
   if(validate) validate_molecule_single(m)
   m
@@ -169,11 +169,11 @@ unique.mol <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' m <- new_molecule_single(c(H=2, O=1), charge = 0L, mass = 18.01528)
+#' m <- new_molecule_single(c(H=2, O=1), charge = 0, mass = 18.01528)
 #' validate_molecule_single(m)
 #' is_molecule_single(m)
 #'
-new_molecule_single <- function(x, charge = 0L, mass = NA_real_) {
+new_molecule_single <- function(x, charge = 0, mass = NA_real_) {
   if(!is.double(x)) stop("x must be a double vector")
   structure(x, charge = charge, mass = mass, class = "molecule_single")
 }
@@ -213,7 +213,7 @@ validate_molecule_single <- function(x) {
   if(is.null(names(x))) stop("x must have names")
   # check attributes
   if(is.null(attr(x, "charge"))) stop("x is missing attr 'charge'")
-  if(!is.integer(attr(x, "charge"))) stop("attr(x, 'charge') is not an integer")
+  if(!is.numeric(attr(x, "charge"))) stop("attr(x, 'charge') is not numeric")
   if(is.null(attr(x, "mass"))) stop("x is missing attr 'mass'")
   if(!is.double(attr(x, "mass"))) stop("attr(x, 'mass') is not a double")
 
@@ -353,7 +353,7 @@ charge.molecule_single <- function(x) {
 #' @rdname mass
 #' @export
 charge.mol <- function(x) {
-  vapply(x, attr, "charge", FUN.VALUE = integer(1))
+  vapply(x, attr, "charge", FUN.VALUE = numeric(1))
 }
 
 
@@ -541,9 +541,9 @@ parse_mol <- function(txt, validate = TRUE, na = c("NA", "")) {
   charge_matches <- stringr::str_extract(txt, .charge_regex)
   # charge of "-" is -1, "+" is "+1"
   charges <- ifelse(charge_matches == "-", "-1", charge_matches)
-  charges <- ifelse(charges == "+", 1L, suppressWarnings(as.integer(charges)))
+  charges <- ifelse(charges == "+", 1, suppressWarnings(as.numeric(charges)))
   # no charge is zero
-  charges[is.na(charges)] <- 0L
+  charges[is.na(charges)] <- 0
 
   mol_list <- lapply(seq_along(matches), function(i) {
     mol_string <- txt[i]
