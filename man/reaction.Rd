@@ -9,8 +9,7 @@
 \alias{as_reaction.character}
 \title{Create reaction objects}
 \usage{
-reaction(lhs, rhs, counts_lhs = rep(1, length(lhs)), counts_rhs = rep(1,
-  length(rhs)), validate = TRUE)
+reaction(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE)
 
 as_reaction(x, ...)
 

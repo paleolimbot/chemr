@@ -16,14 +16,21 @@
 #' reaction(~H2O + `H+`, ~`H3O+`)
 #' reaction(c("H2O", "H+"), "H3O+")
 #'
-reaction <- function(lhs, rhs, counts_lhs = rep(1, length(lhs)),
-                     counts_rhs = rep(1, length(rhs)), validate = TRUE) {
+reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE) {
   lhs <- as_mol(lhs, validate = validate)
+  # check length of counts_lhs
+  if((length(counts_lhs) != length(lhs)) && (length(counts_lhs) != 1)) {
+    stop("counts_lhs must be 1 or length(rhs)")
+  }
+  counts_lhs <- rep_len(counts_lhs, length(lhs))
   rhs <- as_mol(rhs, validate = validate)
-  r <- new_reaction(list(lhs = lhs,
-                         rhs = rhs,
-                         counts_lhs = counts_lhs,
-                         counts_rhs = counts_rhs))
+  # check length of counts_rhs
+  if((length(counts_rhs) != length(rhs)) && (length(counts_rhs) != 1)) {
+    stop("counts_lhs must be 1 or length(rhs)")
+  }
+  counts_rhs <- rep_len(counts_rhs, length(rhs)) * -1
+  r <- new_reaction(list(mol = c(lhs, rhs),
+                         coefficients = c(counts_lhs, counts_rhs)))
   # need to validate reaction counts regardless of validate arg
   validate_reaction(r)
   # return r
@@ -155,12 +162,14 @@ count_names_add <- function(name, env, n=1L) {
 #' @export
 #'
 #' @examples
-#' r <- new_reaction(list(lhs = as_mol(c("H2O", "H+")), rhs = as_mol("H3O+"),
-#'                        counts_lhs = c(1, 1), counts_rhs = 1))
+#' r <- new_reaction(list(mol = as_mol(c("H2O", "H+", "H3O+")),
+#'                        coefficients = c(1, 1, -1)))
 #' validate_reaction(r)
 #'
 new_reaction <- function(x) {
+  # check base type
   if(!is.list(x)) stop("x must be a list")
+  # return structure
   structure(x, class = "reaction")
 }
 
@@ -170,19 +179,15 @@ validate_reaction <- function(x) {
   # check type
   if(!is.list(x)) stop("x must be a list")
   if(!inherits(x, "reaction")) stop("x must inherit 'reaction'")
-  # check lhs, rhs
-  if(!("lhs" %in% names(x))) stop("x missing element 'lhs'")
-  if(!("rhs" %in% names(x))) stop("x missing element 'rhs'")
-  if(!is_mol(x$lhs)) stop("x$lhs does not inherit 'mol'")
-  if(!is_mol(x$rhs)) stop("x$rhs does not inherit 'mol'")
-  # check counts types
-  if(!("counts_lhs" %in% names(x))) stop("x missing element 'lhs'")
-  if(!("counts_rhs" %in% names(x))) stop("x missing element 'rhs'")
-  if(!is.numeric(x$counts_lhs)) stop("x$counts_lhs is not numeric")
-  if(!is.numeric(x$counts_rhs)) stop("x$counts_rhs is not numeric")
-  # check counts lengths
-  if(length(x$counts_lhs) != length(x$lhs)) stop("x$counts_lhs must have same length as x$lhs")
-  if(length(x$counts_rhs) != length(x$rhs)) stop("x$counts_rhs must have same length as x$rhs")
+
+  # check required names
+  if(!("mol" %in% names(x))) stop("Required component 'mol' missing from x")
+  if(!("coefficients" %in% names(x))) stop("Required component 'coefficients' missing from x")
+  # check types
+  if(!is_mol(x$mol)) stop("x$mol is not a mol vector")
+  if(!is.numeric(x$coefficients)) stop("x$coefficients is not numeric")
+  # check lengths
+  if(length(x$mol) != length(x$coefficients)) stop("length(x$mol) != length(x$coefficients)")
 
   # return x, invisibly
   invisible(x)

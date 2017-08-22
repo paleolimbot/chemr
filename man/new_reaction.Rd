@@ -22,8 +22,8 @@ A reaction object
 Create, validate reaction objects
 }
 \examples{
-r <- new_reaction(list(lhs = as_mol(c("H2O", "H+")), rhs = as_mol("H3O+"),
-                       counts_lhs = c(1, 1), counts_rhs = 1))
+r <- new_reaction(list(mol = as_mol(c("H2O", "H+", "H3O+")),
+                       coefficients = c(1, 1, -1)))
 validate_reaction(r)
 
 }
