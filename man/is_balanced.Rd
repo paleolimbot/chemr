@@ -13,6 +13,8 @@ balance(x, charge = TRUE, tol = .Machine$double.eps^0.5)
 \item{x}{A reaction object}
 
 \item{charge}{Balance charge?}
+
+\item{tol}{Tolerance for zero detection}
 }
 \value{
 A balanced reaction or logical describing if the reaction is balanced

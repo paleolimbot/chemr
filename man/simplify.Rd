@@ -26,6 +26,8 @@ remove_zero_counts(x, ...)
 \item{x}{A mol, molecule_single, or reaction object}
 
 \item{...}{Unused}
+
+\item{tol}{Tolerance for zero detection}
 }
 \value{
 An object with the same class as x

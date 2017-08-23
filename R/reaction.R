@@ -259,7 +259,9 @@ rhs <- function(x) {
 as.character.reaction <- function(x, ...) {
   sides <- vapply(list(lhs(x), rhs(x)), function(r) {
     coeffs <- abs(r$coefficient)
-    coeffs <- ifelse(coeffs == 1, "", as.character(coeffs))
+    coeffs <- ifelse(abs(coeffs - 1) < .Machine$double.eps^0.5,
+                     "",
+                     format(coeffs, ...))
     paste0(coeffs, as.character(r$mol), collapse = " + ")
   }, character(1))
   paste(sides, collapse = " = ")
@@ -345,6 +347,7 @@ as.matrix.reaction <- function(x, ...) {
 #'
 #' @param x A reaction object
 #' @param charge Balance charge?
+#' @param tol Tolerance for zero detection
 #'
 #' @return A balanced reaction or logical describing if the reaction is balanced
 #' @export
@@ -382,7 +385,8 @@ balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
   if(identical(dim(null_space), c(length(x$mol), 1L))) {
     ns <- null_space[, 1, drop = TRUE]
     # check for all zero null space
-    if(any(abs(ns) < tol)) stop("Could not balance reaction: null space contains zero values")
+    if(any(abs(ns) < tol)) stop("Could not balance reaction: null space contains zero values ",
+                                "for mols ", paste(x$mol[abs(ns) < tol], collapse = ", "))
     # scale such that min(ns) == 1, first value is positive
     ns <- ns / min(abs(ns))
     x$coefficient <- ns * sign(ns[1])
@@ -399,7 +403,8 @@ balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
     # return reaction
     x
   } else {
-    stop("Could not balance reaction: null space has incorrect dimensions")
+    stop("Could not balance reaction: null space has incorrect dimensions: ",
+         paste(dim(null_space), collapse = ", "))
   }
 }
 

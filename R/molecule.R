@@ -486,6 +486,7 @@ combine_molecules <- function(...) {
 #'
 #' @param x A mol, molecule_single, or reaction object
 #' @param ... Unused
+#' @param tol Tolerance for zero detection
 #'
 #' @return An object with the same class as x
 #' @export

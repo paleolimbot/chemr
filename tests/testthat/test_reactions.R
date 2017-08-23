@@ -118,6 +118,55 @@ test_that("balance() balances reaction", {
   # check geochem examples
   # NaAlSi3O8 <=> KAl3Si3O10(OH)2
   r4 <- as_reaction("NaAlSi3O8 = KAl3Si3O10O2H2 + SiO2 + K+ + Na+ + H+")
-  balance(r4)
+  expect_true(is_balanced(balance(r4)))
+  # K1.5Al5.5Si6.5O20(OH)4 <=> Al2Si2O5(OH)4 + SiO2
+  r5 <- as_reaction("K1.5Al5.5Si6.5O20O4H4 = Al2Si2O5O4H4 + SiO2 + K+ + H2O + H+")
+  expect_true(is_balanced(balance(r5)))
+  # Fe+2 = Fe(OH)3
+  r6 <- as_reaction("Fe+2 = FeO3H3 + H2O + H+")
+  expect_true(is_balanced(balance(r6, charge = F), charge = F))
+  # H2O = O2 + H+
+  r7 <- as_reaction("H2O = O2 + H+")
+  expect_true(is_balanced(balance(r7, charge = F), charge = F))
+  # Fe+2 + O2 = Fe(OH)3 (doesn't work!)
+  #r8_balanced <- as_reaction("4Fe+2 + O2 + 10H2O = 4FeO3H3 + 8H+")
+  #r8 <- as_reaction("Fe+2 + O2 + H2O = FeO3H3 + H+")
+  #is_balanced(r8_balanced)
+  #balance(r8)
+
+  # Clinochlore [Mg10Al4Si6O20(OH)16] + Muscovite + Calcite =>
+  # Clinozoisite [Ca2Al3Si3O12(OH)] + Phlogopite
+
+  # Clinochlore [Mg10Al4Si6O20(OH)16] + Muscovite =>
+  # Pyrope [Mg3Al2Si3O12] + K-Spar
+
+  # Phlogopite =>
+  # Montmorillonite [Na2/3Mg2/3Al10/3Si8O20(OH)4]
+
+  # Anorthite + Diopside =>
+  # Clinochlore [Mg10Al4Si6O20(OH)16] + Calcite
+
+  # Diopside + Hornblende [NaCa2Al3Mg4Si6O22(OH)2] =>
+  # Mg-Chlorite [Mg10Al4Si6O20(OH)16] + Calcite + Albite
+
+  # Clinochlore [Mg10Al4Si6O20(OH)16] + Calcite =>
+  # Kaolinite + Dolomite
+
+  # Albite => Illite using Si, Al
+
+  # Magnetite + H2S => Pyrite
+
+  # Mg-Chlorite [Mg7Fe3Al4Si6O20(OH)16] + Calcite =>
+  # Muscovite + Pyrite + Dolomite
+  # on Al, Fe
+
+  # Ilmenite => Rutile + Hematite
+
+  # KAl3Si3O10(OH)2 = Mg10Al4Si6O20(OH)16
+  # using SiO2, H2O, K+, H+, Mg+2
+
+  # final:
+  # 4 KAl3Si3O10(OH)2 + 6 SiO2 + 48 H2O + 30 Mg+2 =
+  # 3 Mg10Al4Si6O20(OH)16 + 56 H+ + 4 K+
 
 })
