@@ -26,5 +26,4 @@ is_balanced(O2 + H2 ~ 2*H2O)
 is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = FALSE)
 is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
 
-
 }

@@ -264,3 +264,58 @@ test_that("remove zero values, simplify works as intended", {
   expect_identical(simplify(NA_molecule_), NA_molecule_)
   expect_identical(remove_zero_counts(NA_molecule_), NA_molecule_)
 })
+
+test_that("data frame, matrix representations are correct", {
+  mol_text <- c("H2O", "H3O+", "H+", "Mg+2", "O-2", "O2", "CH3COOH", NA_character_,
+                "Cl-", NA_character_)
+  mol_single <- as_molecule_single(~H2O)
+  mol_len_1 <- as_mol(~H2O)
+  mols <- as_mol(mol_text)
+
+  # create all
+  mat <- as.matrix(mols)
+  tbl <- tibble::as_tibble(mols)
+  df <- as.data.frame(mols)
+
+  # check class
+  expect_is(mat, "matrix")
+  expect_is(tbl, "tbl")
+  expect_is(df, "data.frame")
+
+  # check dimensions
+  expect_equal(length(mols), nrow(mat))
+  expect_equal(length(mols), nrow(tbl))
+  expect_equal(length(mols), nrow(df))
+  expect_equal(ncol(mat), 5)
+  required_names <- c("mol", "mol_text", "mass", "charge")
+  expect_true(all(required_names %in% names(tbl)))
+  expect_true(all(required_names %in% names(df)))
+  expect_equal(length(required_names) + ncol(mat), ncol(tbl))
+  expect_equal(length(required_names) + ncol(mat), ncol(df))
+
+  # recreate mols from df
+  mat2 <- df[-(1:3)] %>%
+    plyr::mlply(molecule_single) %>%
+    new_mol() %>%
+    as.matrix()
+  # equal except for rownames
+  rownames(mat2) <- NULL
+  rownames(mat) <- NULL
+  expect_equal(mat, mat2)
+
+  # one length input
+  expect_identical(as.matrix(mol_single), as.matrix(mol_len_1))
+  expect_identical(as.data.frame(mol_single), as.data.frame(mol_len_1))
+  expect_identical(tibble::as_tibble(mol_single), tibble::as_tibble(mol_len_1))
+
+  # zero-length input
+  expect_is(as.matrix(mol()), "matrix")
+  expect_equal(nrow(as.matrix(mol())), 0)
+  expect_equal(ncol(as.matrix(mol())), 0)
+  expect_is(as.data.frame(mol()), "data.frame")
+  expect_equal(nrow(as.data.frame(mol())), 0)
+  expect_equal(ncol(as.data.frame(mol())), 4)
+  expect_is(tibble::as_tibble(mol()), "data.frame")
+  expect_equal(nrow(tibble::as_tibble(mol())), 0)
+  expect_equal(ncol(tibble::as_tibble(mol())), 4)
+})

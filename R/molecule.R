@@ -583,4 +583,87 @@ parse_mol <- function(txt, validate = TRUE, na = c("NA", "")) {
   ml
 }
 
+#' Data frame reprsentation of a molecule object
+#'
+#' @param x A molecule object
+#' @param ... Ignored
+#'
+#' @return A tibble with one row per molecule
+#' @export
+#' @rdname molecule_tibble
+#'
+#' @importFrom tibble as_tibble
+#'
+#' @examples
+#' as.data.frame(as_mol(~H2O))
+#' library(tibble)
+#' as_tibble(as_mol(~H2O))
+#' as_tibble(mol("H2O", "NH3"))
+#'
+as.data.frame.molecule_single <- function(x, ...) {
+  as.data.frame(as_tibble.molecule_single(x, ...))
+}
 
+#' @rdname molecule_tibble
+#' @export
+as_tibble.molecule_single <- function(x, ...) {
+  as_tibble.mol(as_mol(x), ...)
+}
+
+#' @rdname molecule_tibble
+#' @export
+as_tibble.mol <- function(x, ...) {
+  df <- cbind(
+    tibble::tibble(
+      mol = x,
+      mol_text = as.character(x),
+      mass = mass(x),
+      charge = charge(x)
+    ),
+    element_tbl_mol(x)
+  )
+  tibble::as_tibble(df)
+}
+
+#' @rdname molecule_tibble
+#' @export
+as.data.frame.mol <- function(x, ...) {
+  as.data.frame(as_tibble.mol(x, ...))
+}
+
+#' @rdname molecule_tibble
+#' @export
+as.matrix.molecule_single <- function(x, ...) {
+  as.matrix.mol(as_mol(x), ...)
+}
+
+#' @rdname molecule_tibble
+#' @export
+as.matrix.mol <- function(x, ...) {
+  matrix <- as.matrix(element_tbl_mol(x))
+  rownames(matrix) <- make.unique(as.character(x), sep = "_")
+  matrix
+}
+
+# at the base of many of the above functions
+element_tbl <- function(mol_single) {
+  m_simple <- as.list(remove_zero_counts(simplify(mol_single)))
+  # make sure there is always one row
+  m_simple$.dummy <- 1
+  tibble::as_tibble(m_simple)
+}
+
+# multi version of above
+element_tbl_mol <- function(mol, fill_empty = 0) {
+  if(length(mol) == 0) return(tibble::tibble())
+  # make elements frame
+  elements <- purrr::map_df(mol, element_tbl)
+  # remove .dummy column
+  elements <- elements[setdiff(names(elements), ".dummy")]
+  # make NA values 0 in elements frame
+  elements[] <- lapply(elements, function(x) {
+    replace(x, is.na(x), fill_empty)
+  })
+  # return elements
+  elements
+}

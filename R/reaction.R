@@ -7,7 +7,7 @@
 #' @param counts_rhs The counts for molecules on the righthand side
 #' @param validate Flag to validate molecules in the reaction
 #' @param x An object to convert to a reaction object
-#' @param coefficients Coefficients corresponding to as_reaction input
+#' @param coefficient coefficient corresponding to as_reaction input
 #' @param ... Passed to/from methods
 #'
 #' @return A reaction object
@@ -31,7 +31,7 @@ reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE) 
   }
   counts_rhs <- rep_len(counts_rhs, length(rhs)) * -1
   r <- new_reaction(list(mol = c(lhs, rhs),
-                         coefficients = c(counts_lhs, counts_rhs)))
+                         coefficient = c(counts_lhs, counts_rhs)))
   # need to validate reaction counts regardless of validate arg
   validate_reaction(r)
   # return r
@@ -54,11 +54,11 @@ as_reaction.reaction <- function(x, ...) {
 
 #' @rdname reaction
 #' @export
-as_reaction.mol <- function(x, coefficients, validate = TRUE, ...) {
-  if(length(coefficients) != length(x)) {
-    stop("length(coefficients) is not equal to length(x)")
+as_reaction.mol <- function(x, coefficient, validate = TRUE, ...) {
+  if(length(coefficient) != length(x)) {
+    stop("length(coefficient) is not equal to length(x)")
   }
-  r <- new_reaction(list(mol = x, coefficients = coefficients))
+  r <- new_reaction(list(mol = x, coefficient = coefficient))
   if(validate) validate_reaction(r)
   r
 }
@@ -175,7 +175,7 @@ count_names_add <- function(name, env, n=1L) {
 #'
 #' @examples
 #' r <- new_reaction(list(mol = as_mol(c("H2O", "H+", "H3O+")),
-#'                        coefficients = c(1, 1, -1)))
+#'                        coefficient = c(1, 1, -1)))
 #' validate_reaction(r)
 #'
 new_reaction <- function(x) {
@@ -194,12 +194,12 @@ validate_reaction <- function(x) {
 
   # check required names
   if(!("mol" %in% names(x))) stop("Required component 'mol' missing from x")
-  if(!("coefficients" %in% names(x))) stop("Required component 'coefficients' missing from x")
+  if(!("coefficient" %in% names(x))) stop("Required component 'coefficient' missing from x")
   # check types
   if(!is_mol(x$mol)) stop("x$mol is not a mol vector")
-  if(!is.numeric(x$coefficients)) stop("x$coefficients is not numeric")
+  if(!is.numeric(x$coefficient)) stop("x$coefficient is not numeric")
   # check lengths
-  if(length(x$mol) != length(x$coefficients)) stop("length(x$mol) != length(x$coefficients)")
+  if(length(x$mol) != length(x$coefficient)) stop("length(x$mol) != length(x$coefficient)")
 
   # return x, invisibly
   invisible(x)
@@ -228,19 +228,19 @@ is_reaction <- function(x) {
 #' rhs(r)
 #'
 `[.reaction` <- function(x, i, ...) {
-  new_reaction(list(mol = x$mol[i], coefficients = x$coefficients[i]))
+  new_reaction(list(mol = x$mol[i], coefficient = x$coefficient[i]))
 }
 
 #' @export
 #' @rdname reactionsubset
 lhs <- function(x) {
-  x[x$coefficients >= 0]
+  x[x$coefficient >= 0]
 }
 
 #' @export
 #' @rdname reactionsubset
 rhs <- function(x) {
-  x[x$coefficients < 0]
+  x[x$coefficient < 0]
 }
 
 #' Coerce reactions to a character vector
@@ -258,7 +258,7 @@ rhs <- function(x) {
 #'
 as.character.reaction <- function(x, ...) {
   sides <- vapply(list(lhs(x), rhs(x)), function(r) {
-    coeffs <- abs(r$coefficients)
+    coeffs <- abs(r$coefficient)
     coeffs <- ifelse(coeffs == 1, "", as.character(coeffs))
     paste0(coeffs, as.character(r$mol), collapse = " + ")
   }, character(1))
@@ -290,17 +290,55 @@ print.reaction <- function(x, ...) {
 #'
 simplify.reaction <- function(x, ...) {
   unique_mols <- unique(x$mol)
-  unique_coefficients <- vapply(unique_mols, function(m) {
-    sum(x$coefficients[x$mol == as_mol(m)])
+  unique_coefficient <- vapply(unique_mols, function(m) {
+    sum(x$coefficient[x$mol == as_mol(m)])
   }, numeric(1))
   new_reaction(list(mol = unique_mols,
-                    coefficients = unique_coefficients))
+                    coefficient = unique_coefficient))
 }
 
 #' @rdname simplify.reaction
 #' @export
 remove_zero_counts.reaction <- function(x, ...) {
-  x[!is.na(x$mol) & (x$coefficients != 0)]
+  x[!is.na(x$mol) & (x$coefficient != 0)]
+}
+
+#' Data frame reprsentation of a reaction object
+#'
+#' @param x A reaction object
+#' @param ... Ignored
+#'
+#' @return A tibble with one row per molecule in reaction
+#' @export
+#' @rdname reaction_tibble
+#'
+#' @importFrom tibble as_tibble
+#'
+#' @examples
+#' as.data.frame(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#' library(tibble)
+#' as_tibble(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#'
+#' as.matrix(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#'
+as.data.frame.reaction <- function(x, ...) {
+  as.data.frame(as_tibble.reaction(x, ...))
+}
+
+#' @rdname reaction_tibble
+#' @export
+as_tibble.reaction <- function(x, ...) {
+  tbl_mol <- as_tibble.mol(x$mol)
+  tbl_mol$coefficient <- x$coefficient
+  # reorder columns
+  cols_first <- c("mol", "mol_text", "charge", "mass", "coefficient")
+  tbl_mol[c(cols_first, setdiff(names(tbl_mol), cols_first))]
+}
+
+#' @rdname reaction_tibble
+#' @export
+as.matrix.reaction <- function(x, ...) {
+  as.matrix(x$mol) * x$coefficient
 }
 
 #' Balance reactions
@@ -319,7 +357,7 @@ remove_zero_counts.reaction <- function(x, ...) {
 #'
 is_balanced <- function(x, charge = TRUE) {
   x <- as_reaction(x)
-  all_mols <- x$mol * x$coefficients
+  all_mols <- x$mol * x$coefficient
   result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)))
   if(charge) {
     (length(result) == 0) && (charge(result) == 0)

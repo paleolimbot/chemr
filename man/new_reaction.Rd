@@ -23,7 +23,7 @@ Create, validate reaction objects
 }
 \examples{
 r <- new_reaction(list(mol = as_mol(c("H2O", "H+", "H3O+")),
-                       coefficients = c(1, 1, -1)))
+                       coefficient = c(1, 1, -1)))
 validate_reaction(r)
 
 }

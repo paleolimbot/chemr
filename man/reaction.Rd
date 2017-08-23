@@ -18,7 +18,7 @@ as.reaction(x, ...)
 
 \method{as_reaction}{reaction}(x, ...)
 
-\method{as_reaction}{mol}(x, coefficients, validate = TRUE, ...)
+\method{as_reaction}{mol}(x, coefficient, validate = TRUE, ...)
 
 \method{as_reaction}{formula}(x, validate = TRUE, ...)
 
@@ -39,7 +39,7 @@ as.reaction(x, ...)
 
 \item{...}{Passed to/from methods}
 
-\item{coefficients}{Coefficients corresponding to as_reaction input}
+\item{coefficient}{coefficient corresponding to as_reaction input}
 }
 \value{
 A reaction object
