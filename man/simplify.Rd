@@ -15,11 +15,12 @@ remove_zero_counts(x, ...)
 
 \method{simplify}{molecule_single}(x, ...)
 
-\method{remove_zero_counts}{molecule_single}(x, ...)
+\method{remove_zero_counts}{molecule_single}(x, tol = .Machine$double.eps^0.5,
+  ...)
 
 \method{simplify}{mol}(x, ...)
 
-\method{remove_zero_counts}{mol}(x, ...)
+\method{remove_zero_counts}{mol}(x, tol = .Machine$double.eps^0.5, ...)
 }
 \arguments{
 \item{x}{A mol, molecule_single, or reaction object}

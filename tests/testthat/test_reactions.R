@@ -104,3 +104,20 @@ test_that("data frame representations are correct", {
   expect_identical(as.data.frame(r0), as.data.frame(tibble::as_tibble(r0)))
 })
 
+test_that("balance() balances reaction", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+
+  # r1 is balanced
+  expect_identical(balance(r1), r1)
+  # r2 is not
+  expect_true(is_balanced(balance(r2)))
+  expect_identical(balance(r2), r1)
+
+  # check geochem examples
+  # NaAlSi3O8 <=> KAl3Si3O10(OH)2
+  r4 <- as_reaction("NaAlSi3O8 = KAl3Si3O10O2H2 + SiO2 + K+ + Na+ + H+")
+  balance(r4)
+
+})

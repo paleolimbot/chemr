@@ -355,12 +355,13 @@ as.matrix.reaction <- function(x, ...) {
 #' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = FALSE)
 #' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
 #'
-is_balanced <- function(x, charge = TRUE) {
+is_balanced <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
   x <- as_reaction(x)
   all_mols <- x$mol * x$coefficient
-  result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)))
+  result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)),
+                               tol = tol)
   if(charge) {
-    (length(result) == 0) && (charge(result) == 0)
+    (length(result) == 0) && (abs(charge(result)) <= tol)
   } else {
     length(result) == 0
   }
@@ -368,7 +369,37 @@ is_balanced <- function(x, charge = TRUE) {
 
 #' @rdname is_balanced
 #' @export
-balance <- function(x, charge = TRUE) {
-  stop("not implemented")
+balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
+  x <- as_reaction(x)
+  # check balance
+  if(is_balanced(x, charge = charge)) return(x)
+
+  # solve the null space of the (molecule) matrix
+  xmat <- as.matrix(x$mol)
+  null_space <- MASS::Null(xmat)
+
+  # check dimensions (need dimensions of length(x$mol), 1L)
+  if(identical(dim(null_space), c(length(x$mol), 1L))) {
+    ns <- null_space[, 1, drop = TRUE]
+    # check for all zero null space
+    if(any(abs(ns) < tol)) stop("Could not balance reaction: null space contains zero values")
+    # scale such that min(ns) == 1, first value is positive
+    ns <- ns / min(abs(ns))
+    x$coefficient <- ns * sign(ns[1])
+    # check balance
+    if(!is_balanced(x, charge = FALSE)) {
+      stop("Could not balance reaction: coefficients did not result in ",
+           "an element-balanced reaction: ",
+           paste(x$coefficient, as.character(x$mol), collapse = " // "))
+    }
+    if(charge && !is_balanced(x, charge = TRUE)) {
+      # add electron to the correct side
+      stop("haven't implemented the electron yet!")
+    }
+    # return reaction
+    x
+  } else {
+    stop("Could not balance reaction: null space has incorrect dimensions")
+  }
 }
 

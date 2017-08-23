@@ -5,9 +5,9 @@
 \alias{balance}
 \title{Balance reactions}
 \usage{
-is_balanced(x, charge = TRUE)
+is_balanced(x, charge = TRUE, tol = .Machine$double.eps^0.5)
 
-balance(x, charge = TRUE)
+balance(x, charge = TRUE, tol = .Machine$double.eps^0.5)
 }
 \arguments{
 \item{x}{A reaction object}

@@ -514,8 +514,8 @@ simplify.molecule_single <- function(x, ...) {
 
 #' @rdname simplify
 #' @export
-remove_zero_counts.molecule_single <- function(x, ...) {
-  new_molecule_single(x[x != 0], charge = charge(x), mass = mass(x))
+remove_zero_counts.molecule_single <- function(x, tol = .Machine$double.eps^0.5, ...) {
+  new_molecule_single(x[abs(x) >= tol], charge = charge(x), mass = mass(x))
 }
 
 #' @rdname simplify
@@ -526,8 +526,8 @@ simplify.mol <- function(x, ...) {
 
 #' @rdname simplify
 #' @export
-remove_zero_counts.mol <- function(x, ...) {
-  new_mol(lapply(x, remove_zero_counts.molecule_single))
+remove_zero_counts.mol <- function(x, tol = .Machine$double.eps^0.5, ...) {
+  new_mol(lapply(x, remove_zero_counts.molecule_single, tol = tol))
 }
 
 # internal function to parse molecule text
