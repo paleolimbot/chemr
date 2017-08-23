@@ -32,7 +32,7 @@ test_that("reaction subsetting works as intended", {
   expect_equal(lhs(robj)$coefficient, c(1, 2))
   expect_is(rhs(robj), "reaction")
   expect_equal(as.character(rhs(robj)$mol), "H2O")
-  expect_equal(rhs(robj)$coefficient, -2)
+  expect_equal(rhs(robj)$coefficient, 2)
 })
 
 test_that("reaction charater printing works as intended", {
@@ -102,6 +102,28 @@ test_that("data frame representations are correct", {
   expect_equal(ncol(tibble::as_tibble(r0)), 5)
   expect_is(as.data.frame(r0), "data.frame")
   expect_identical(as.data.frame(r0), as.data.frame(tibble::as_tibble(r0)))
+})
+
+test_that("reaction arithmetic works as intended", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction("H3O+ + OH- = 2H2O")
+  expect_is(-r1, "reaction")
+  expect_identical(-r1, r1 * -1)
+  expect_true(setequal(r1$mol, (-r1)$mol))
+
+  expect_is(r1 + r2, "reaction")
+  expect_identical(as.character(lhs(r1) + lhs(r2) - rhs(r1) - rhs(r2)),
+                   as.character(r1 + r2))
+  expect_identical(r1 - r2, r1 + (-r2))
+
+  expect_is(r1 * 2, "reaction")
+  expect_identical((r1*2)$mol, r1$mol)
+  expect_identical((r1*2)$coefficient, r1$coefficient * 2)
+  expect_identical(r1 * 2, 2* r1)
+  expect_error(r1 * r1, "* operator not defined for types reaction, reaction")
+  expect_identical(r1 / 2, r1 * 0.5)
+  expect_error(2 / r1, "/ operator not defined for types numeric, reaction")
+  expect_identical(r1 * -2, -r1 * 2)
 })
 
 test_that("balance() balances reaction", {

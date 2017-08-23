@@ -240,7 +240,7 @@ lhs <- function(x) {
 #' @export
 #' @rdname reactionsubset
 rhs <- function(x) {
-  x[x$coefficient < 0]
+  -(x[x$coefficient < 0])
 }
 
 #' Coerce reactions to a character vector
@@ -274,6 +274,71 @@ print.reaction <- function(x, ...) {
   invisible(x)
 }
 
+
+#' Reaction arithmetic
+#'
+#' @param x A reaction object
+#' @param y A reaction object or operand
+#'
+#' @return A reaction object
+#' @export
+#'
+#' @examples
+#' r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+#' r2 <- as_reaction("H3O+ + OH- = 2H2O")
+#'
+#' -r1
+#' -r2
+#' r1 + r2
+#' r1 - r2
+#' r1 * 2
+#' 2 * r1
+#' r1 * -2
+#'
+`*.reaction` <- function(x, y) {
+  if(is_reaction(x) && is.numeric(y)) {
+    x$coefficient <- x$coefficient * y
+    x
+  } else if(is_reaction(y) && is.numeric(x)) {
+    y$coefficient <- y$coefficient * x
+    y
+  } else {
+    stop("* operator not defined for types ", class(x)[1],
+         ", ", class(y)[1])
+  }
+}
+
+#' @export
+`/.reaction` <- function(x, y) {
+  if(is_reaction(x) && is.numeric(y)) {
+    x$coefficient <- x$coefficient / y
+    x
+  } else {
+    stop("/ operator not defined for types ", class(x)[1],
+         ", ", class(y)[1])
+  }
+}
+
+#' @export
+`+.reaction` <- function(x, y) {
+  if(missing(y)) return(x)
+  x <- as_reaction(x)
+  y <- as_reaction(y)
+  new_reaction(
+    list(
+      mol = c(x$mol, y$mol),
+      coefficient = c(x$coefficient, y$coefficient)
+    )
+  )
+}
+
+#' @export
+`-.reaction` <- function(x, y) {
+  if(missing(y)) return(x * -1)
+  x <- as_reaction(x)
+  y <- as_reaction(y)
+  x + (y * -1)
+}
 
 #' Simplify reaction objects
 #'
