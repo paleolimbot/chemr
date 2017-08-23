@@ -4,14 +4,14 @@
 \alias{new_molecule_single}
 \title{Create, validate molecule objects}
 \usage{
-new_molecule_single(x, charge = 0, mass = NA_real_)
+new_molecule_single(x, charge = 0, count = NA_real_)
 }
 \arguments{
 \item{x}{A double vector or molecule object}
 
 \item{charge}{An optional charge to assign to the molecule}
 
-\item{mass}{A mass to assign the molecule}
+\item{count}{An optional count to assign to the molecule}
 }
 \value{
 An double vector with class "molecule_single"
@@ -20,7 +20,7 @@ An double vector with class "molecule_single"
 Create, validate molecule objects
 }
 \examples{
-m <- new_molecule_single(c(H=2, O=1), charge = 0, mass = 18.01528)
+m <- new_molecule_single(list(H=2, O=1), charge = 0)
 validate_molecule_single(m)
 is_molecule_single(m)
 

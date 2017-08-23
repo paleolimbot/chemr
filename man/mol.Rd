@@ -28,7 +28,7 @@
 \usage{
 mol(..., validate = TRUE)
 
-molecule_single(..., charge = 0, validate = TRUE)
+molecule_single(..., charge = 0, count = NA_real_, validate = TRUE)
 
 as_molecule_single(x, ...)
 
@@ -74,6 +74,8 @@ is_mol(x)
 \item{validate}{Validate elements in molecule}
 
 \item{charge}{The charge of the molecule}
+
+\item{count}{Optional count to associate with the object}
 
 \item{x}{An objec to be coerced to type molecule(s)}
 }

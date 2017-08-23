@@ -6,7 +6,7 @@ test_that("molecule character parsing works as intended", {
   # good
   expect_silent(as_molecule_single("H2O"))
   expect_is(as_molecule_single("H2O"), "molecule_single")
-  expect_equivalent(as_molecule_single("H2O")[], c(H=2, O=1))
+  expect_equivalent(as_molecule_single("H2O")[], list(H=2, O=1))
   expect_equal(charge(as_molecule_single("H2O")), 0)
   expect_silent(as_molecule_single("H3O+"))
   expect_silent(as_molecule_single("NH3-"))
@@ -26,14 +26,16 @@ test_that("molecule character parsing works as intended", {
   expect_identical(as_molecule_single(NA_character_), NA_molecule_)
   expect_silent(as_mol(c("H2O", NA_character_)))
 
-  # zero count handling
-  expect_identical(as_molecule_single("H2O0"), molecule_single(H=2))
-
   # bad
   expect_warning(as_molecule_single("H2o"), "Bad molecule text:.*")
   expect_error(as_molecule_single("Hh2O"), "names\\(x\\) contained the following bad symbols:.*")
   expect_warning(as_molecule_single("H2O++"), "Bad molecule text:.*")
   expect_warning(as_molecule_single("Hhhh2O+"), "Bad molecule text:.*")
+})
+
+test_that("nested molecules are possible", {
+  as_molecule_single("CaSO4(OH)4")
+  as_mol("CaSO4(OH)4")
 })
 
 test_that("formula works for creating molecule(s)", {
@@ -55,15 +57,18 @@ test_that("coersion rules work as expected", {
 test_that("molecule(s) constructors work as expected", {
   expect_identical(molecule_single(H=1), as_molecule_single("H"))
   expect_identical(molecule_single(H=1, charge = 1), as_molecule_single("H+"))
-  expect_identical(molecule_single(H=NA), molecule_single(H=1)) # NA <- 1
-  expect_identical(molecule_single(H=0, O=2), molecule_single(O = 2)) # 0 counts removed
+})
+
+test_that("serialization works properly for nested molecules", {
+  mnest <- molecule_single(Ca = 1, S = 1, O = 4, list(O = 1, H = 1, count = 4))
+  expect_equal(as.character(mnest), "CaSO4(OH)4")
 })
 
 test_that("the print method works for molecule and mol", {
   water <- as_molecule_single(~H2O)
   waters <- mol(water, water)
   expect_output(print(water), "<molecule_single>.*")
-  expect_output(print(waters, "<mol>.*?[1].*"))
+  expect_output(print(waters), "<mol>.*?[1].*")
   expect_identical(water, print(water))
   expect_identical(waters, print(waters))
 })
@@ -129,6 +134,12 @@ test_that("unique() works for mol vectors", {
   expect_identical(unique(rep(mol_objs, 2)), mol_objs)
 })
 
+test_that("unique() works with nested mol vectors", {
+  mol_objs <- as_mol(c("CaSO4(OH)2", "Fe(OH)3", "Fe(OH)3"))
+  expect_is(unique(mol_objs), "mol")
+  expect_length(unique(mol_objs), 2)
+})
+
 test_that("is.na() works for molecule_single and mol objects", {
   expect_true(is.na(NA_molecule_))
   expect_false(is.na(as_molecule_single(~H2O)))
@@ -171,8 +182,6 @@ test_that("molecule_single arithmetic works as intended", {
   expect_true(is.na(NA_molecule_ + NA_molecule_))
   # unary operator
   expect_identical(+m1, m1)
-
-
 
   # equality operator
   expect_length(m1 == m2, 1)
@@ -257,8 +266,11 @@ test_that("remove zero values, simplify works as intended", {
   m2 <- as_molecule_single("C2H4O2")
   expect_identical(simplify(m1), m2)
 
-  expect_identical(remove_zero_counts(new_molecule_single(c(H=2, O=0), mass = unname(2*elmass("H")))),
+  expect_identical(remove_zero_counts(new_molecule_single(list(H=2, O=0))),
                    as_molecule_single("H2"))
+
+  expect_equal(simplify(as_mol("Ca(SO4)(H2O)4") + as_mol("Ca(SO4)")),
+               as_mol("Ca2S2O12H8"))
 
   # NA handling
   expect_identical(simplify(NA_molecule_), NA_molecule_)
@@ -319,3 +331,4 @@ test_that("data frame, matrix representations are correct", {
   expect_equal(nrow(tibble::as_tibble(mol())), 0)
   expect_equal(ncol(tibble::as_tibble(mol())), 4)
 })
+
