@@ -13,10 +13,12 @@
 \alias{as_molecule_single.formula}
 \alias{as_mol.mol}
 \alias{as_mol.molecule_single}
+\alias{as_mol.reaction}
 \alias{as_mol.character}
 \alias{as_mol.formula}
 \alias{new_mol}
 \alias{NA_molecule_}
+\alias{electron_}
 \alias{is.na.molecule_single}
 \alias{is.na.mol}
 \alias{validate_molecule_single}
@@ -48,6 +50,8 @@ as.mol(x, ...)
 
 \method{as_mol}{molecule_single}(x, validate = TRUE, ...)
 
+\method{as_mol}{reaction}(x, ...)
+
 \method{as_mol}{character}(x, validate = TRUE, ...)
 
 \method{as_mol}{formula}(x, validate = TRUE, ...)
@@ -55,6 +59,8 @@ as.mol(x, ...)
 new_mol(x)
 
 NA_molecule_
+
+electron_
 
 \method{is.na}{molecule_single}(x)
 

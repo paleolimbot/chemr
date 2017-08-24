@@ -7,6 +7,7 @@
 \alias{mass.mol}
 \alias{charge}
 \alias{charge.default}
+\alias{charge.reaction}
 \alias{charge.molecule_single}
 \alias{charge.mol}
 \title{Access properties of a molecule object}
@@ -22,6 +23,8 @@ mass(x)
 charge(x)
 
 \method{charge}{default}(x)
+
+\method{charge}{reaction}(x)
 
 \method{charge}{molecule_single}(x)
 

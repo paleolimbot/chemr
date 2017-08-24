@@ -119,6 +119,12 @@ as_mol.molecule_single <- function(x, validate = TRUE, ...) {
 
 #' @rdname mol
 #' @export
+as_mol.reaction <- function(x, ...) {
+  x$mol
+}
+
+#' @rdname mol
+#' @export
 as_mol.character <- function(x, validate = TRUE, ...) {
   if(!is.logical(validate)) stop("Invalid value for validate: ", validate)
   parse_mol(x, validate = validate)
@@ -216,6 +222,11 @@ NA_molecule_ <- new_molecule_single(stats::setNames(list(), character(0)),
 
 #' @rdname mol
 #' @export
+electron_ <- new_molecule_single(stats::setNames(list(), character(0)),
+                                 charge = -1, count = NA_real_)
+
+#' @rdname mol
+#' @export
 is.na.molecule_single <- function(x) {
   identical(x, NA_molecule_)
 }
@@ -308,6 +319,7 @@ print.mol <- function(x, ...) {
 #' @export
 as.character.molecule_single <- function(x, ...) {
   if(identical(x, NA_molecule_)) return(NA_character_)
+  if(identical(x, electron_)) return("e-")
 
   counts <- vapply(x, function(el) {
     if(is.numeric(el)) {
@@ -395,6 +407,12 @@ charge <- function(x) UseMethod("charge")
 #' @export
 charge.default <- function(x) {
   charge(as_mol(x))
+}
+
+#' @rdname mass
+#' @export
+charge.reaction <- function(x) {
+  sum(charge(x$mol) * x$coefficient)
 }
 
 #' @rdname mass
@@ -617,6 +635,9 @@ parse_single <- function(txt, validate = TRUE, na = c("NA", ""), count = NA_real
   # match molecule
   full_match <- stringr::str_match(txt, .mol_regex)
   if(is.na(full_match[, 1, drop = TRUE])) warning("Bad molecule text: ", txt)
+  # check for electron
+  if(txt == "e-") return(electron_)
+
   charge_str <- full_match[, 3, drop = TRUE]
   mol_string <- full_match[, 2, drop = TRUE]
   charge <- ifelse(is.na(charge_str) || (charge_str == ""), 0,

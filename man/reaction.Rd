@@ -18,7 +18,8 @@ as.reaction(x, ...)
 
 \method{as_reaction}{reaction}(x, ...)
 
-\method{as_reaction}{mol}(x, coefficient, validate = TRUE, ...)
+\method{as_reaction}{mol}(x, coefficient = rep_len(1, length(x)),
+  validate = TRUE, ...)
 
 \method{as_reaction}{formula}(x, validate = TRUE, ...)
 

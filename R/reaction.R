@@ -54,7 +54,7 @@ as_reaction.reaction <- function(x, ...) {
 
 #' @rdname reaction
 #' @export
-as_reaction.mol <- function(x, coefficient, validate = TRUE, ...) {
+as_reaction.mol <- function(x, coefficient = rep_len(1, length(x)), validate = TRUE, ...) {
   if(length(coefficient) != length(x)) {
     stop("length(coefficient) is not equal to length(x)")
   }
@@ -463,7 +463,11 @@ balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
     }
     if(charge && !is_balanced(x, charge = TRUE)) {
       # add electron to the correct side
-      stop("haven't implemented the electron yet!")
+      total_charge <- charge(x)
+      x$mol <- c(x$mol, as_mol(electron_))
+      x$coefficient <- c(x$coefficient, total_charge)
+      # combines all electrons into one component
+      simplify(x)
     }
     # return reaction
     x

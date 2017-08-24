@@ -332,3 +332,8 @@ test_that("data frame, matrix representations are correct", {
   expect_equal(ncol(tibble::as_tibble(mol())), 4)
 })
 
+test_that("electron is handled correctly", {
+  expect_identical(as_molecule_single("e-"), electron_)
+  expect_equal(charge(electron_), -1)
+  expect_equal(mass(electron_), 0)
+})

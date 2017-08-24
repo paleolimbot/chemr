@@ -146,10 +146,10 @@ test_that("balance() balances reaction", {
   expect_true(is_balanced(balance(r5)))
   # Fe+2 = Fe(OH)3
   r6 <- as_reaction("Fe+2 = FeO3H3 + H2O + H+")
-  expect_true(is_balanced(balance(r6, charge = F), charge = F))
+  expect_true(is_balanced(balance(r6)))
   # H2O = O2 + H+
   r7 <- as_reaction("H2O = O2 + H+")
-  expect_true(is_balanced(balance(r7, charge = F), charge = F))
+  expect_true(is_balanced(balance(r7)))
   # Fe+2 + O2 = Fe(OH)3 (doesn't work!)
   #r8_balanced <- as_reaction("4Fe+2 + O2 + 10H2O = 4FeO3H3 + 8H+")
   #r8 <- as_reaction("Fe+2 + O2 + H2O = FeO3H3 + H+")
