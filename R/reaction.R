@@ -99,7 +99,7 @@ as_reaction.character <- function(x, validate = TRUE, ...) {
 parse_side <- function(side, validate = TRUE) {
   components <- stringr::str_split(side, "\\s+\\+\\s+")[[1]]
   # component is a count plus a molecule id
-  component_match <- stringr::str_match(components, "^\\s*([0-9.]*)(.*?)\\s*$")
+  component_match <- stringr::str_match(components, "^\\s*([0-9.]*)\\s?(.*?)\\s*$")
   bad_components <- components[is.na(component_match[, 1, drop = TRUE])]
   if(length(bad_components) > 0) stop("Bad components in reaction: ",
                                       paste(bad_components, collapse = ", "))

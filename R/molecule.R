@@ -624,6 +624,33 @@ remove_zero_counts.mol <- function(x, tol = .Machine$double.eps^0.5, ...) {
   new_mol(lapply(x, remove_zero_counts.molecule_single, tol = tol))
 }
 
+
+#' Sort molecule, reaction objects
+#'
+#' Sorts mol objects by alphabetic character representation, and
+#' reaction objects by decreasing coefficient. This is probably useful
+#' for comparison.
+#'
+#' @param x An object
+#' @param decreasing Should the list be sorted
+#' @param ... Passed to \link[base]{order}
+#'
+#' @return An object with the same class as x
+#' @export
+#'
+#' @examples
+#' sort(mol(~H2O, ~Ar, ~H2))
+#' sort(as_reaction("2H2O + 4H+ = 2H2O + 4H+"))
+#'
+sort.mol <- function(x, decreasing = FALSE, ...) {
+  x[order(as.character(x), decreasing = decreasing, ...)]
+}
+
+#' @export
+sort.reaction <- function(x, decreasing = FALSE, ...) {
+  x[order(x$coefficient, decreasing = !decreasing, ...)]
+}
+
 # internal function to parse molecule text
 .el_regex <- "([A-Z][a-z]?|\\(.+?\\))(-?[0-9.]*)"
 # .sub_mol_regex <- "\\(.+?\\)(-?[0-9.]*)"
