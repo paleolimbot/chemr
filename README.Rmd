@@ -1,0 +1,171 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# chemr
+
+Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used bye the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [easyphreeqc](https://github.com/paleolimbot/easyphreeqc) is under active development.
+
+## Installation
+
+You can install chemr from github with:
+
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("paleolimbot/chemr")
+```
+
+If you can load the package, everything worked!
+
+```{r}
+library(chemr)
+```
+
+## The periodic tibble
+
+The periodic tibble is [Wikipedia's version of the periodic table](https://en.wikipedia.org/wiki/List_of_chemical_elements) in data.frame (tibble) form. You can access these data in a few ways:
+
+```{r}
+is_element("Hg")
+```
+
+```{r}
+elmass("Hg")
+```
+
+```{r}
+elz("Hg")
+```
+
+```{r}
+elsymbol(80)
+```
+ 
+ You can also access the entire periodic tibble by typing `data(pt)`.
+ 
+```{r}
+data(pt)
+pt
+```
+
+## Molecules
+
+Molecules are a collection of counted elements (or sub-molecules) with a charge. While it's possible to create a molecule by "hand", it's much easier to use the character representation of a molecule, which is usually what you get when copy/pasting from a source.
+
+```{r}
+mol("H2O")
+```
+
+And like everything else in R, `mol` objects are vectorized, so you can serialize an entire column of molecule formulas.
+
+```{r}
+as_mol(c("H2O", "H+", "Fe(OH)3", "Ca+2"))
+```
+
+You can access the mass, charge, and elemental composition of a molecule using `mass()`, `charge()`, and `as.data.frame()` or `as.matrix()`
+
+```{r}
+m <- as_mol(c("H2O", "H+", "Fe(OH)3", "Ca+2"))
+mass(m)
+```
+
+```{r}
+charge(m)
+```
+
+```{r}
+as.data.frame(m)
+```
+
+## Reactions
+
+Reactions are essentially a molecule vector with coefficients (positive for the left side, negative for the right side). Similar to molecules, it's easiest to use the serialized form (conveniently, what is generally copied/pasted):
+
+```{r}
+as_reaction("2H2 + O2 = 2H2O")
+```
+
+The `is_balanced()` and `balance()` functions will happily balance these for you, provided you have the correct number of species defined.
+
+```{r}
+balance("H2 + O2 = H2O")
+```
+
+You can access various components of a reaction in the same way as for molecules:
+
+```{r}
+r <- as_reaction("2H2 + O2 = 2H2O")
+lhs(r)
+```
+
+```{r}
+rhs(r)
+```
+
+```{r}
+mass(r) # mass balance of the reaction
+```
+
+```{r}
+charge(r) # charge balance of the reaction
+```
+
+```{r}
+as.data.frame(r)
+```
+
+```{r}
+as.matrix(r)
+```
+
+## Molecule and Reaction arithmetic
+
+Various arithmetic operators are available for molecule and reaction objects, such as `+`, `*` and `==`.
+
+```{r}
+m <- mol(~Fe2O3, ~H2O, ~NH3, ~`H+`)
+m + as_mol("OH-")
+```
+
+```{r}
+m * 2
+```
+
+```{r}
+m == as_mol(~H2O)
+```
+
+Reactions have similar arithmetic, with coefficients to various molecules being added together.
+
+```{r}
+r1 <- as_reaction("2H2 + O2 = 2H2O")
+r1 + as_reaction("H2O = H2O")
+```
+
+By default the reaction isn't simplified, but can be using `simplify()` and `remove_zero_counts()`.
+
+```{r}
+simplify(r1 + as_reaction("H2O = H2O"))
+```
+
+```{r}
+simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O"))
+```
+
+```{r}
+remove_zero_counts(simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O")))
+```
+
+## The Wish List
+
+There are lots of things missing from this package that should exist, including the include various parameters to molecules and equations such as $\Delta H$ or aliases (e.g., `CaSO4` as "gypsum"). Additionally, there is currently no way to indicate hydration in the same way as PHREEQC (e.g., `CaSO4:2H2O`). Currently this is possible only as `CaSO4(H2O)2`. Feel free to [contribute to development](https://github.com/paleolimbot/chemr) or [submit feature requests](https://github.com/paleolimbot/chemr/issues) on GitHub.

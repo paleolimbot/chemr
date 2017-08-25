@@ -401,6 +401,12 @@ mass.mol <- function(x) {
 
 #' @rdname mass
 #' @export
+mass.reaction <- function(x) {
+  sum(mass(x$mol) * x$coefficient)
+}
+
+#' @rdname mass
+#' @export
 charge <- function(x) UseMethod("charge")
 
 #' @rdname mass

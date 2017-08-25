@@ -5,6 +5,7 @@
 \alias{mass.default}
 \alias{mass.molecule_single}
 \alias{mass.mol}
+\alias{mass.reaction}
 \alias{charge}
 \alias{charge.default}
 \alias{charge.reaction}
@@ -19,6 +20,8 @@ mass(x)
 \method{mass}{molecule_single}(x)
 
 \method{mass}{mol}(x)
+
+\method{mass}{reaction}(x)
 
 charge(x)
 
