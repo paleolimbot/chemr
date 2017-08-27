@@ -8,6 +8,7 @@
 \alias{as_mol}
 \alias{as.mol}
 \alias{as_molecule_single.molecule_single}
+\alias{as_molecule_single.list}
 \alias{as_molecule_single.mol}
 \alias{as_molecule_single.character}
 \alias{as_molecule_single.formula}
@@ -16,6 +17,7 @@
 \alias{as_mol.reaction}
 \alias{as_mol.character}
 \alias{as_mol.formula}
+\alias{as_mol.list}
 \alias{new_mol}
 \alias{NA_molecule_}
 \alias{electron_}
@@ -40,6 +42,8 @@ as.mol(x, ...)
 
 \method{as_molecule_single}{molecule_single}(x, ...)
 
+\method{as_molecule_single}{list}(x, validate = TRUE, ...)
+
 \method{as_molecule_single}{mol}(x, ...)
 
 \method{as_molecule_single}{character}(x, validate = TRUE, ...)
@@ -55,6 +59,8 @@ as.mol(x, ...)
 \method{as_mol}{character}(x, validate = TRUE, ...)
 
 \method{as_mol}{formula}(x, validate = TRUE, ...)
+
+\method{as_mol}{list}(x, validate = TRUE, ...)
 
 new_mol(x)
 
@@ -83,7 +89,7 @@ is_mol(x)
 
 \item{count}{Optional count to associate with the object}
 
-\item{x}{An objec to be coerced to type molecule(s)}
+\item{x}{An object to be coerced to a mol object}
 }
 \value{
 An object of class molecule

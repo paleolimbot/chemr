@@ -7,6 +7,9 @@
 \alias{mass.mol}
 \alias{mass.reaction}
 \alias{charge}
+\alias{charge<-}
+\alias{charge<-.molecule_single}
+\alias{charge<-.mol}
 \alias{charge.default}
 \alias{charge.reaction}
 \alias{charge.molecule_single}
@@ -25,6 +28,12 @@ mass(x)
 
 charge(x)
 
+charge(x) <- value
+
+\method{charge}{molecule_single}(x) <- value
+
+\method{charge}{mol}(x) <- value
+
 \method{charge}{default}(x)
 
 \method{charge}{reaction}(x)
@@ -35,6 +44,8 @@ charge(x)
 }
 \arguments{
 \item{x}{A molecule object or symbol string}
+
+\item{value}{A replacement value}
 }
 \value{
 The mass of the molecule or element in g/mol

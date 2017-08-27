@@ -337,3 +337,54 @@ test_that("electron is handled correctly", {
   expect_equal(charge(electron_), -1)
   expect_equal(mass(electron_), 0)
 })
+
+test_that("molecule_single subsetting works properly", {
+  expect_identical(NA_molecule_[1], NA_molecule_)
+  expect_identical(electron_[1], NA_molecule_)
+
+  expect_equal(as_molecule_single(~Al2O3)[1]$Al, 2)
+  expect_null(as_molecule_single(~Al2O3)[1]$O)
+  expect_equal(as_molecule_single(~Al2O3)[1], as_molecule_single(~Al2O3)["Al"])
+})
+
+test_that("list coersion works as intended", {
+  lst <- list("Al2O3", "KOH", "OH-", NA_molecule_, NA_character_)
+  m <- as_mol(lst)
+  expect_identical(unclass(m),
+                   list(as_molecule_single("Al2O3"),
+                        as_molecule_single("KOH"),
+                        as_molecule_single("OH-"),
+                        NA_molecule_, NA_molecule_))
+
+  lst_single <- list(Al = 2, O = 3)
+  expect_identical(as_molecule_single(lst_single), as_molecule_single("Al2O3"))
+  expect_identical(as_molecule_single(list(), charge = NA_real_), NA_molecule_)
+  expect_identical(as_molecule_single(list(Fe = 1, OH = 3)),
+                   as_molecule_single("Fe(OH)3"))
+})
+
+test_that("replacement methods work as intended", {
+  m2 <- as_mol(c("Al", "Na", "K"))
+  expect_error(m2[1] <- as_molecule_single("O2"),
+               "\\[\\] Assignment to mol index must use a mol object")
+  m2[1] <- as_mol("O2")
+  expect_identical(m2, as_mol(c("O2", "Na", "K")))
+  expect_error(m2[[1]] <- as_mol("NH3"),
+               "\\[\\[\\]\\] Assignment to mol index must use a molecule_single object")
+  m2[[1]] <- as_molecule_single("NH3")
+  expect_identical(m2, as_mol(c("NH3", "Na", "K")))
+})
+
+test_that("charge replacement methods work as intended", {
+  msingle <- as_molecule_single("Na")
+  m <- as_mol("Na")
+
+  charge(msingle) <- 1
+  expect_identical(msingle, as_molecule_single("Na+"))
+  charge(m) <- 1
+  expect_identical(m, as_mol("Na+"))
+
+  m3 <- as_mol(c("Al", "Na", "K"))
+  charge(m3) <- c(3, 1, 1)
+  expect_identical(m3, as_mol(c("Al+3", "Na+", "K+")))
+})

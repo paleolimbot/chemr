@@ -4,6 +4,9 @@
 \alias{c.molecule_single}
 \alias{c.mol}
 \alias{[.mol}
+\alias{[<-.mol}
+\alias{[[<-.mol}
+\alias{[.molecule_single}
 \alias{rep.molecule_single}
 \alias{rep.mol}
 \alias{unique.mol}
@@ -14,6 +17,12 @@
 \method{c}{mol}(...)
 
 \method{[}{mol}(x, i, ...)
+
+\method{[}{mol}(x, i) <- value
+
+\method{[[}{mol}(x, i) <- value
+
+\method{[}{molecule_single}(x, i, ...)
 
 \method{rep}{molecule_single}(x, times, ...)
 
@@ -27,6 +36,8 @@
 \item{x}{A mol object}
 
 \item{i}{The index to extract}
+
+\item{value}{Replacement value}
 
 \item{times}{The number of times to repeat the molecule}
 }

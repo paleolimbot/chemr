@@ -3,9 +3,9 @@
 #'
 #' @param ... A named list of symbols and counts
 #' @param charge The charge of the molecule
+#' @param x An object to be coerced to a mol object
 #' @param count Optional count to associate with the object
 #' @param validate Validate elements in molecule
-#' @param x An objec to be coerced to type molecule(s)
 #'
 #' @return An object of class molecule
 #' @export
@@ -26,7 +26,8 @@ mol <- function(..., validate = TRUE) {
 molecule_single <- function(..., charge = 0, count = NA_real_, validate = TRUE) {
   mol_list <- list(...)
   # check for empty molecule
-  if(length(mol_list) == 0) return(new_molecule_single(list()))
+  if(length(mol_list) == 0) return(new_molecule_single(list(a=1)[FALSE],
+                                                       charge = charge, count = count))
   if(is.null(names(mol_list))) stop("At least one argument to molecule_single must be named")
 
   # make recursive list of x
@@ -52,9 +53,11 @@ molecule_single <- function(..., charge = 0, count = NA_real_, validate = TRUE) 
                                           count = mol_list_parsed[non_elements],
                                           SIMPLIFY = FALSE)
 
-  # sub molecules don't have names
+  # sub molecules have names that are the character representation of themselves
   sub_mols <- vapply(mol_list_parsed, is_molecule_single, logical(1))
-  names(mol_list_parsed) <- ifelse(sub_mols, "", names(mol_list))
+  all_names <- names(mol_list)
+  all_names[sub_mols] <- vapply(mol_list_parsed[sub_mols], as.character, character(1))
+  names(mol_list_parsed) <- all_names
 
   # create, validate molecule object
   mol <- new_molecule_single(mol_list_parsed, count = count, charge = charge)
@@ -78,6 +81,20 @@ as.mol <- function(x, ...) as_mol(x, ...)
 #' @export
 as_molecule_single.molecule_single <- function(x, ...) {
   x
+}
+
+#' @rdname mol
+#' @export
+as_molecule_single.list <- function(x, validate = TRUE, ...) {
+  args <- list(...)
+  if(is.null(args$charge)) {
+    args$charge <- attr(x, "charge")
+  }
+  if(is.null(args$count)) {
+    args$count <- attr(x, "count")
+  }
+  do.call(molecule_single,
+          c(x, list(validate = validate), args))
 }
 
 #' @rdname mol
@@ -136,11 +153,20 @@ as_mol.formula <- function(x, validate = TRUE, ...) {
   parse_mol(all.vars(x), validate = validate)
 }
 
+#' @rdname mol
+#' @export
+as_mol.list <- function(x, validate = TRUE, ...) {
+  m <- new_mol(lapply(x, as_molecule_single))
+  if(validate) validate_mol(m)
+  m
+}
+
 #' Combine, subset molecule(s) objects
 #'
 #' @param x A mol object
 #' @param i The index to extract
 #' @param times The number of times to repeat the molecule
+#' @param value Replacement value
 #' @param ... Objects to combine
 #'
 #' @return A mol object
@@ -169,6 +195,31 @@ c.mol <- function(...) {
   # NULLs should be NA_molecule
   l[vapply(l, is.null, logical(1))] <- list(NA_molecule_)
   new_mol(l)
+}
+
+#' @rdname c.molecule_single
+#' @export
+`[<-.mol` <- function(x, i, value) {
+  if(!is_mol(value)) stop("[] Assignment to mol index must use a mol object")
+  new_mol(NextMethod())
+}
+
+#' @rdname c.molecule_single
+#' @export
+`[[<-.mol` <- function(x, i, value) {
+  if(!is_molecule_single(value)) stop("[[]] Assignment to mol index must use a ",
+                                      "molecule_single object")
+  new_mol(NextMethod())
+}
+
+#' @rdname c.molecule_single
+#' @export
+`[.molecule_single` <- function(x, i, ...) {
+  # otherwise, use normal indexing rules, removing nulls
+  l <- unclass(x)[i, ...]
+  l <- l[!vapply(l, is.null, logical(1))]
+  # charge is reset for a subset of molecule_single
+  new_molecule_single(l, charge = NA_real_, count = attr(x, "count"))
 }
 
 #' @rdname c.molecule_single
@@ -218,7 +269,7 @@ new_mol <- function(x) {
 #' @rdname mol
 #' @export
 NA_molecule_ <- new_molecule_single(stats::setNames(list(), character(0)),
-                                    charge = NA_integer_, count = NA_real_)
+                                    charge = NA_real_, count = NA_real_)
 
 #' @rdname mol
 #' @export
@@ -253,12 +304,13 @@ validate_molecule_single <- function(x) {
   if(!is.double(attr(x, "count"))) stop("attr(x, 'count') is not a double")
 
   # check symbols
-  bad_symbols <- names(x)[!is_element(names(x)) & (names(x) != "")]
+  sub_mol <- vapply(x, is_molecule_single, logical(1))
+  bad_symbols <- names(x)[!is_element(names(x)) & (!sub_mol)]
   if(length(bad_symbols) > 0) stop("names(x) contained the following bad symbols: ",
                                    paste(bad_symbols, collpase = ", "))
 
   # check sub molecules
-  lapply(x[names(x) == ""], validate_molecule_single)
+  lapply(x[vapply(x, is_molecule_single, logical(1))], validate_molecule_single)
 
   # return x, invisibly
   invisible(x)
@@ -332,9 +384,10 @@ as.character.molecule_single <- function(x, ...) {
   }, numeric(1))
 
   symbols <- names(x)
-  symbols[symbols == ""] <- paste0(
+  sub_mol <- vapply(x, is_molecule_single, logical(1))
+  symbols[sub_mol] <- paste0(
     "(",
-    vapply(x[symbols == ""], as.character, trim = TRUE, ..., FUN.VALUE = character(1)),
+    vapply(x[sub_mol], as.character, trim = TRUE, ..., FUN.VALUE = character(1)),
     ")"
   )
 
@@ -359,6 +412,7 @@ as.character.mol <- function(x, ...) {
 #' Access properties of a molecule object
 #'
 #' @param x A molecule object or symbol string
+#' @param value A replacement value
 #'
 #' @return The mass of the molecule or element in g/mol
 #' @export
@@ -388,7 +442,8 @@ mass.molecule_single <- function(x) {
   }, numeric(1))
 
   masses <- elmass(names(x))
-  masses[names(x) == ""] <- vapply(x[names(x) == ""], mass.molecule_single, numeric(1))
+  sub_mol <- vapply(x, is_molecule_single, logical(1))
+  masses[sub_mol] <- vapply(x[sub_mol], mass.molecule_single, numeric(1))
 
   sum(counts * masses)
 }
@@ -408,6 +463,27 @@ mass.reaction <- function(x) {
 #' @rdname mass
 #' @export
 charge <- function(x) UseMethod("charge")
+
+#' @rdname mass
+#' @export
+`charge<-` <- function(x, value) UseMethod("charge<-")
+
+#' @rdname mass
+#' @export
+`charge<-.molecule_single` <- function(x, value) {
+  if(!is.numeric(value)) stop("Cannot set a non-numeric value as charge")
+  attr(x, "charge") <- value
+  x
+}
+
+#' @rdname mass
+#' @export
+`charge<-.mol` <- function(x, value) {
+  if(length(x) != length(value)) stop("Value must be the same length as x (", length(x), ")")
+  if(!is.numeric(value)) stop("Cannot set a non-numeric value as charge")
+  l <- mapply(`charge<-.molecule_single`, x, value, SIMPLIFY = FALSE)
+  new_mol(l)
+}
 
 #' @rdname mass
 #' @export
@@ -587,6 +663,9 @@ simplify.molecule_single <- function(x, ...) {
   x[sub_mols] <- lapply(x[sub_mols], function(el) {
     simplify(el) * attr(el, "count")
   })
+  # need to replace sub-molecule names with "", or unlist()
+  # will concatenate names together of sub-molecules
+  names(x) <- replace(names(x), sub_mols, "")
 
   # turn x into a named vector
   if(length(x) > 0) {
