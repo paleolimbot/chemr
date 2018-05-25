@@ -462,6 +462,12 @@ mass.reaction <- function(x) {
 
 #' @rdname mass
 #' @export
+mass.reaction_list <- function(x) {
+  vapply(x, mass.reaction, numeric(1))
+}
+
+#' @rdname mass
+#' @export
 charge <- function(x) UseMethod("charge")
 
 #' @rdname mass
@@ -495,6 +501,12 @@ charge.default <- function(x) {
 #' @export
 charge.reaction <- function(x) {
   sum(charge(x$mol) * x$coefficient)
+}
+
+#' @rdname mass
+#' @export
+charge.reaction_list <- function(x) {
+  vapply(x, charge.reaction, numeric(1))
 }
 
 #' @rdname mass

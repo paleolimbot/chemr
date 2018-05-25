@@ -315,12 +315,14 @@ validate_reaction_list <- function(x) {
 #' @export
 #' @rdname reactionsubset
 lhs <- function(x) {
+  if(is_reaction_list(x)) return(new_reaction_list(lapply(x, lhs)))
   x[x$coefficient >= 0]
 }
 
 #' @export
 #' @rdname reactionsubset
 rhs <- function(x) {
+  if(is_reaction_list(x)) return(new_reaction_list(lapply(x, rhs)))
   -(x[x$coefficient < 0])
 }
 
@@ -503,6 +505,18 @@ remove_zero_counts.reaction <- function(x, ...) {
   x[!is.na(x$mol) & (x$coefficient != 0)]
 }
 
+#' @rdname simplify.reaction
+#' @export
+remove_zero_counts.reaction_list <- function(x, ...) {
+  new_reaction_list(lapply(x, remove_zero_counts.reaction))
+}
+
+#' @rdname simplify.reaction
+#' @export
+simplify.reaction_list <- function(x, ...) {
+  new_reaction_list(lapply(x, simplify.reaction))
+}
+
 #' Data frame reprsentation of a reaction object
 #'
 #' @param x A reaction object
@@ -541,6 +555,22 @@ as.matrix.reaction <- function(x, ...) {
   as.matrix(x$mol) * x$coefficient
 }
 
+#' @rdname reaction_tibble
+#' @export
+as_tibble.reaction_list <- function(x, ...) {
+  if(is.null(names(x))) {
+    names(x) <- as.character(seq_along(x))
+  }
+
+  purrr::map_df(x, as_tibble.reaction, .id = "which")
+}
+
+#' @rdname reaction_tibble
+#' @export
+as.data.frame.reaction_list <- function(x, ...) {
+  as.data.frame(as_tibble.reaction_list(x, ...))
+}
+
 #' Balance reactions
 #'
 #' @param x A reaction object
@@ -557,6 +587,10 @@ as.matrix.reaction <- function(x, ...) {
 #' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
 #'
 is_balanced <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
+  if(is_reaction_list(x)) {
+    return(vapply(x, is_balanced, charge = charge, tol = tol, FUN.VALUE = logical(1)))
+  }
+
   x <- as_reaction(x)
   all_mols <- x$mol * x$coefficient
   result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)),
@@ -571,6 +605,10 @@ is_balanced <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
 #' @rdname is_balanced
 #' @export
 balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
+  if(is_reaction_list(x)) {
+    return(new_reaction_list(lapply(x, balance, charge = charge, tol = tol)))
+  }
+
   x <- as_reaction(x)
   # check balance
   if(is_balanced(x, charge = charge)) return(x)

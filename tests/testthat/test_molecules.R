@@ -35,7 +35,7 @@ test_that("molecule character parsing works as intended", {
 
 test_that("nested molecules are possible", {
   as_molecule_single("CaSO4(OH)4")
-  as_mol("CaSO4(OH)4")
+  expect_is(as_mol("CaSO4(OH)4"), "mol")
 })
 
 test_that("formula works for creating molecule(s)", {
@@ -166,7 +166,7 @@ test_that("molecule_single arithmetic works as intended", {
   expect_true(is.na(m1 / NA)) # NA handling
   expect_true(is.na(NA_molecule_ / 4))
   # divide by zero
-  expect_identical(m1 / 0, NA_molecule_)
+  expect_identical(suppressWarnings(m1 / 0), NA_molecule_)
   expect_warning(m1 / 0, "Divide by zero")
 
   # order matters in addition

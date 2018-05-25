@@ -4,6 +4,8 @@
 \alias{as.data.frame.reaction}
 \alias{as_tibble.reaction}
 \alias{as.matrix.reaction}
+\alias{as_tibble.reaction_list}
+\alias{as.data.frame.reaction_list}
 \title{Data frame reprsentation of a reaction object}
 \usage{
 \method{as.data.frame}{reaction}(x, ...)
@@ -11,6 +13,10 @@
 \method{as_tibble}{reaction}(x, ...)
 
 \method{as.matrix}{reaction}(x, ...)
+
+\method{as_tibble}{reaction_list}(x, ...)
+
+\method{as.data.frame}{reaction_list}(x, ...)
 }
 \arguments{
 \item{x}{A reaction object}

@@ -6,12 +6,14 @@
 \alias{mass.molecule_single}
 \alias{mass.mol}
 \alias{mass.reaction}
+\alias{mass.reaction_list}
 \alias{charge}
 \alias{charge<-}
 \alias{charge<-.molecule_single}
 \alias{charge<-.mol}
 \alias{charge.default}
 \alias{charge.reaction}
+\alias{charge.reaction_list}
 \alias{charge.molecule_single}
 \alias{charge.mol}
 \title{Access properties of a molecule object}
@@ -26,6 +28,8 @@ mass(x)
 
 \method{mass}{reaction}(x)
 
+\method{mass}{reaction_list}(x)
+
 charge(x)
 
 charge(x) <- value
@@ -37,6 +41,8 @@ charge(x) <- value
 \method{charge}{default}(x)
 
 \method{charge}{reaction}(x)
+
+\method{charge}{reaction_list}(x)
 
 \method{charge}{molecule_single}(x)
 

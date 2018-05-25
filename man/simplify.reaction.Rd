@@ -3,11 +3,17 @@
 \name{simplify.reaction}
 \alias{simplify.reaction}
 \alias{remove_zero_counts.reaction}
+\alias{remove_zero_counts.reaction_list}
+\alias{simplify.reaction_list}
 \title{Simplify reaction objects}
 \usage{
 \method{simplify}{reaction}(x, ...)
 
 \method{remove_zero_counts}{reaction}(x, ...)
+
+\method{remove_zero_counts}{reaction_list}(x, ...)
+
+\method{simplify}{reaction_list}(x, ...)
 }
 \arguments{
 \item{x}{A reaction object}

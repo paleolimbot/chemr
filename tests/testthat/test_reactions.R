@@ -247,6 +247,28 @@ test_that("reaction_list objects print properly", {
   expect_output(print(rl), "<reaction_list>")
 })
 
-test_that("reaction_list objects implement mass(), charge(), simplify(), and coefficients()", {
+test_that("reaction_list objects implement mass(), charge(), simplify(), remove_zero_counts(), balance(), is_balanced(), lhs(), and rhs()", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+  rl <- reaction_list(r1, r2, r3)
 
+  expect_length(mass(rl), 3)
+  expect_is(mass(rl), "numeric")
+  expect_length(charge(rl), 3)
+  expect_is(charge(rl), "numeric")
+  expect_length(simplify(rl), 3)
+  expect_is(simplify(rl), "reaction_list")
+  expect_length(remove_zero_counts(rl), 3)
+  expect_is(remove_zero_counts(rl), "reaction_list")
+
+  expect_length(balance(rl), 3)
+  expect_is(balance(rl), "reaction_list")
+  expect_length(is_balanced(rl), 3)
+  expect_is(is_balanced(rl), "logical")
+
+  expect_length(lhs(rl), 3)
+  expect_is(lhs(rl), "reaction_list")
+  expect_length(rhs(rl), 3)
+  expect_is(rhs(rl), "reaction_list")
 })
