@@ -40,6 +40,14 @@ reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE) 
 
 #' @rdname reaction
 #' @export
+reaction_list <- function(..., validate = TRUE) {
+  rl <- new_reaction_list(lapply(list(...), as_reaction))
+  if(validate) validate_reaction_list(rl)
+  rl
+}
+
+#' @rdname reaction
+#' @export
 as_reaction <- function(x, ...) UseMethod("as_reaction")
 
 #' @rdname reaction
@@ -95,6 +103,41 @@ as_reaction.character <- function(x, validate = TRUE, ...) {
            validate = FALSE)
 
 }
+
+#' @rdname reaction
+#' @export
+as_reaction_list <- function(x, ...) UseMethod("as_reaction_list")
+
+#' @rdname reaction
+#' @export
+as.reaction_list <- function(x, ...) UseMethod("as_reaction_list")
+
+#' @rdname reaction
+#' @export
+as_reaction_list.reaction_list <- function(x, ...) {
+  x
+}
+
+#' @rdname reaction
+#' @export
+as_reaction_list.list <- function(x, validate = TRUE, ...) {
+  do.call(reaction_list, c(x, list(validate = validate)))
+}
+
+#' @rdname reaction
+#' @export
+as_reaction_list.reaction <- function(x, validate = TRUE, ...) {
+  reaction_list(x, validate = validate)
+}
+
+#' @rdname reaction
+#' @export
+as_reaction_list.list <- function(x, validate = TRUE, ...) {
+  rl <- new_mol(lapply(x, as_reaction))
+  if(validate) validate_reaction_list(rl)
+  rl
+}
+
 
 parse_side <- function(side, validate = TRUE) {
   components <- stringr::str_split(side, "\\s+\\+\\s+")[[1]]
@@ -211,6 +254,38 @@ is_reaction <- function(x) {
   inherits(x, "reaction")
 }
 
+#' @rdname new_reaction
+#' @export
+new_reaction_list <- function(x) {
+  # check base type
+  if(!is.list(x)) stop("x must be a list")
+  # return structure
+  structure(x, class = "reaction_list")
+}
+
+#' @rdname new_reaction
+#' @export
+is_reaction_list <- function(x) {
+  inherits(x, "reaction_list")
+}
+
+#' @rdname new_reaction
+#' @export
+validate_reaction_list <- function(x) {
+  # check type
+  if(!is.list(x)) stop("x must be a list")
+  if(!inherits(x, "reaction_list")) stop("x must inherit 'reaction_list'")
+
+  validation <- lapply(x, function(x) try(validate_reaction(x), silent = TRUE))
+  val_error <- vapply(validation, inherits, "try-error", FUN.VALUE = logical(1))
+  if(any(val_error)) stop("reaction at positions ",
+                          paste(which(val_error), collapse = ", "),
+                          " are invalid reaction objects")
+
+  # return x, invisibly
+  invisible(x)
+}
+
 #' Subset, combine reaction objects
 #'
 #' @param x A reaction object
@@ -229,6 +304,12 @@ is_reaction <- function(x) {
 #'
 `[.reaction` <- function(x, i, ...) {
   new_reaction(list(mol = x$mol[i], coefficient = x$coefficient[i]))
+}
+
+#' @export
+#' @rdname reactionsubset
+`[.reaction_list` <- function(x, i, ...) {
+  new_reaction_list(unclass(x)[i])
 }
 
 #' @export
@@ -269,9 +350,22 @@ as.character.reaction <- function(x, ...) {
 
 #' @rdname as.character.reaction
 #' @export
+as.character.reaction_list <- function(x, ...) {
+  vapply(x, as.character, character(1))
+}
+
+#' @rdname as.character.reaction
+#' @export
 print.reaction <- function(x, ...) {
   cat("<reaction>", as.character(x))
   invisible(x)
+}
+
+#' @rdname as.character.reaction
+#' @export
+print.reaction_list <- function(x, ...) {
+  cat("<reaction_list>\n")
+  print(as.character(x), quote = FALSE, ...)
 }
 
 
@@ -337,6 +431,45 @@ print.reaction <- function(x, ...) {
   if(missing(y)) return(x * -1)
   x <- as_reaction(x)
   y <- as_reaction(y)
+  x + (y * -1)
+}
+
+#' @export
+`*.reaction_list` <- function(x, y) {
+  if((is_reaction_list(x) && is.numeric(y)) || (is_reaction_list(y) && is.numeric(x))) {
+    xy <- tibble::tibble(x, y) # use tibble's repeating
+    new_reaction_list(purrr::pmap(xy, `*.reaction`))
+  } else {
+    stop("* operator not defined for types ", class(x)[1],
+         ", ", class(y)[1])
+  }
+}
+
+#' @export
+`/.reaction_list` <- function(x, y) {
+  if(is_reaction_list(x) && is.numeric(y)) {
+    xy <- tibble::tibble(x, y) # use tibble's repeating
+    new_reaction_list(purrr::pmap(xy, `/.reaction`))
+  } else {
+    stop("/ operator not defined for types ", class(x)[1],
+         ", ", class(y)[1])
+  }
+}
+
+#' @export
+`+.reaction_list` <- function(x, y) {
+  if(missing(y)) return(x)
+  x <- as_reaction_list(x)
+  y <- as_reaction_list(y)
+  xy <- tibble::tibble(x, y) # use tibble's repeating
+  new_reaction_list(purrr::pmap(xy, `+.reaction`))
+}
+
+#' @export
+`-.reaction_list` <- function(x, y) {
+  if(missing(y)) return(x * -1)
+  x <- as_reaction_list(x)
+  y <- as_reaction_list(y)
   x + (y * -1)
 }
 

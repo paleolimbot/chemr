@@ -2,15 +2,24 @@
 % Please edit documentation in R/reaction.R
 \name{reaction}
 \alias{reaction}
+\alias{reaction_list}
 \alias{as_reaction}
 \alias{as.reaction}
 \alias{as_reaction.reaction}
 \alias{as_reaction.mol}
 \alias{as_reaction.formula}
 \alias{as_reaction.character}
+\alias{as_reaction_list}
+\alias{as.reaction_list}
+\alias{as_reaction_list.reaction_list}
+\alias{as_reaction_list.list}
+\alias{as_reaction_list.reaction}
+\alias{as_reaction_list.list}
 \title{Create reaction objects}
 \usage{
 reaction(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE)
+
+reaction_list(..., validate = TRUE)
 
 as_reaction(x, ...)
 
@@ -24,6 +33,18 @@ as.reaction(x, ...)
 \method{as_reaction}{formula}(x, validate = TRUE, ...)
 
 \method{as_reaction}{character}(x, validate = TRUE, ...)
+
+as_reaction_list(x, ...)
+
+as.reaction_list(x, ...)
+
+\method{as_reaction_list}{reaction_list}(x, ...)
+
+\method{as_reaction_list}{list}(x, validate = TRUE, ...)
+
+\method{as_reaction_list}{reaction}(x, validate = TRUE, ...)
+
+\method{as_reaction_list}{list}(x, validate = TRUE, ...)
 }
 \arguments{
 \item{lhs}{The lefthand side}
@@ -36,9 +57,9 @@ as.reaction(x, ...)
 
 \item{validate}{Flag to validate molecules in the reaction}
 
-\item{x}{An object to convert to a reaction object}
-
 \item{...}{Passed to/from methods}
+
+\item{x}{An object to convert to a reaction object}
 
 \item{coefficient}{coefficient corresponding to as_reaction input}
 }

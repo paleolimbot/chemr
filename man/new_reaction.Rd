@@ -4,6 +4,9 @@
 \alias{new_reaction}
 \alias{validate_reaction}
 \alias{is_reaction}
+\alias{new_reaction_list}
+\alias{is_reaction_list}
+\alias{validate_reaction_list}
 \title{Create, validate reaction objects}
 \usage{
 new_reaction(x)
@@ -11,6 +14,12 @@ new_reaction(x)
 validate_reaction(x)
 
 is_reaction(x)
+
+new_reaction_list(x)
+
+is_reaction_list(x)
+
+validate_reaction_list(x)
 }
 \arguments{
 \item{x}{A reaction object}

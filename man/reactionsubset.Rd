@@ -2,11 +2,14 @@
 % Please edit documentation in R/reaction.R
 \name{[.reaction}
 \alias{[.reaction}
+\alias{[.reaction_list}
 \alias{lhs}
 \alias{rhs}
 \title{Subset, combine reaction objects}
 \usage{
 \method{[}{reaction}(x, i, ...)
+
+\method{[}{reaction_list}(x, i, ...)
 
 lhs(x)
 

@@ -192,3 +192,61 @@ test_that("balance() balances reaction", {
   # 3 Mg10Al4Si6O20(OH)16 + 56 H+ + 4 K+
 
 })
+
+test_that("reaction_list objects can be created", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+
+  expect_is(reaction_list(r1, r2, r3), "reaction_list")
+
+  expect_identical(
+    list(r1, r2, r3),
+    unclass(reaction_list(r1, r2, r3))
+  )
+
+  # names get carried over
+  expect_identical(
+    list(a = r1, r2, r3),
+    unclass(reaction_list(a = r1, r2, r3))
+  )
+})
+
+test_that("reaction_list objects subset properly", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+  rl <- reaction_list(r1, r2, r3)
+  expect_is(rl, "reaction_list")
+  expect_is(rl[1], "reaction_list")
+  expect_identical(rl[1], reaction_list(r1))
+})
+
+test_that("reaction_list objects have proper arithmetic properties", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+  rl <- reaction_list(r1, r2, r3)
+
+  expect_is(rl, "reaction_list")
+  expect_is(rl * 2, "reaction_list")
+  expect_identical(2 * rl, rl * 2)
+  expect_error(rl * c(1, 2), "length 1 or 3")
+
+  expect_identical((rl * 2) / 2, rl)
+  expect_is(rl / 2, "reaction_list")
+  expect_is(rl + rl, "reaction_list")
+  expect_is(rl - rl, "reaction_list")
+})
+
+test_that("reaction_list objects print properly", {
+  r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
+  r2 <- as_reaction(O2 + H2 ~ H2O)
+  r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
+  rl <- reaction_list(r1, r2, r3)
+  expect_output(print(rl), "<reaction_list>")
+})
+
+test_that("reaction_list objects implement mass(), charge(), simplify(), and coefficients()", {
+
+})

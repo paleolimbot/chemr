@@ -2,12 +2,18 @@
 % Please edit documentation in R/reaction.R
 \name{as.character.reaction}
 \alias{as.character.reaction}
+\alias{as.character.reaction_list}
 \alias{print.reaction}
+\alias{print.reaction_list}
 \title{Coerce reactions to a character vector}
 \usage{
 \method{as.character}{reaction}(x, ...)
 
+\method{as.character}{reaction_list}(x, ...)
+
 \method{print}{reaction}(x, ...)
+
+\method{print}{reaction_list}(x, ...)
 }
 \arguments{
 \item{x}{A reaction object}
