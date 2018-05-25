@@ -13,7 +13,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10)
-Imports: stringr, tibble, purrr, MASS
+Imports: stringr, tibble, purrr, MASS, dplyr
 Suggests: 
     testthat,
     covr
