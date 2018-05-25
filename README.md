@@ -3,7 +3,9 @@
 chemr
 =====
 
-Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used bye the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [easyphreeqc](https://github.com/paleolimbot/easyphreeqc) is under active development.
+[![Travis build status](https://travis-ci.org/paleolimbot/chemr.svg?branch=master)](https://travis-ci.org/paleolimbot/chemr) [![Coverage status](https://codecov.io/gh/paleolimbot/chemr/branch/master/graph/badge.svg)](https://codecov.io/github/paleolimbot/chemr?branch=master)
+
+Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used by the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [easyphreeqc](https://github.com/paleolimbot/easyphreeqc) is under active development.
 
 Installation
 ------------
@@ -54,18 +56,18 @@ You can also access the entire periodic tibble by typing `data(pt)`.
 data(pt)
 pt
 #> # A tibble: 118 x 7
-#>        z symbol      name group period      mass   valence
-#>    <int>  <chr>     <chr> <int>  <int>     <dbl>    <list>
-#>  1     1      H  Hydrogen     1      1  1.008000 <int [3]>
-#>  2     2     He    Helium    18      1  4.002602 <int [1]>
-#>  3     3     Li   Lithium     1      2  6.940000 <int [2]>
-#>  4     4     Be Beryllium     2      2  9.012183 <int [3]>
-#>  5     5      B     Boron    13      2 10.810000 <int [6]>
-#>  6     6      C    Carbon    14      2 12.011000 <int [9]>
-#>  7     7      N  Nitrogen    15      2 14.007000 <int [9]>
-#>  8     8      O    Oxygen    16      2 15.999000 <int [5]>
-#>  9     9      F  Fluorine    17      2 18.998403 <int [2]>
-#> 10    10     Ne      Neon    18      2 20.179760 <int [1]>
+#>        z symbol name      group period  mass valence  
+#>    <int> <chr>  <chr>     <int>  <int> <dbl> <list>   
+#>  1     1 H      Hydrogen      1      1  1.01 <int [3]>
+#>  2     2 He     Helium       18      1  4.00 <int [1]>
+#>  3     3 Li     Lithium       1      2  6.94 <int [2]>
+#>  4     4 Be     Beryllium     2      2  9.01 <int [3]>
+#>  5     5 B      Boron        13      2 10.8  <int [6]>
+#>  6     6 C      Carbon       14      2 12.0  <int [9]>
+#>  7     7 N      Nitrogen     15      2 14.0  <int [9]>
+#>  8     8 O      Oxygen       16      2 16.0  <int [5]>
+#>  9     9 F      Fluorine     17      2 19.0  <int [2]>
+#> 10    10 Ne     Neon         18      2 20.2  <int [1]>
 #> # ... with 108 more rows
 ```
 
