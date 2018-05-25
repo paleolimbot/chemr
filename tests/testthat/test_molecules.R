@@ -307,7 +307,7 @@ test_that("data frame, matrix representations are correct", {
 
   # recreate mols from df
   mat2 <- df[-(1:3)] %>%
-    plyr::mlply(molecule_single) %>%
+    purrr::pmap(molecule_single) %>%
     new_mol() %>%
     as.matrix()
   # equal except for rownames
