@@ -358,6 +358,8 @@ rhs <- function(x) {
 #'
 #' @param x A reaction object
 #' @param equals_sign An equals sign to use for the reaction
+#' @param wrap_coeff Wrap coefficients for fancy formatting
+#' @param wrap_super,wrap_sub Wrap super/subscript for fancy formatting
 #' @param ... Ignored
 #'
 #' @return A character vector
@@ -368,13 +370,14 @@ rhs <- function(x) {
 #' as.character(r)
 #' print(r)
 #'
-as.character.reaction <- function(x, equals_sign = "=", ...) {
+as.character.reaction <- function(x, equals_sign = "=", wrap_coeff = identity,
+                                  wrap_super = identity, wrap_sub = identity, ...) {
   sides <- vapply(list(lhs(x), rhs(x)), function(r) {
     coeffs <- abs(r$coefficient)
     coeffs <- ifelse(abs(coeffs - 1) < .Machine$double.eps^0.5,
                      "",
-                     format(coeffs, ...))
-    paste0(coeffs, as.character(r$mol, ...), collapse = " + ")
+                     wrap_coeff(format(coeffs, ...)))
+    paste0(coeffs, as.character(r$mol, wrap_super = wrap_super, wrap_sub = wrap_sub, ...), collapse = " + ")
   }, character(1))
   paste(sides, collapse = paste0(" ", equals_sign, " "))
 }

@@ -40,6 +40,7 @@ as_markdown.reaction <- function(x, equals_sign = NULL, ...) {
     equals_sign = equals_sign,
     wrap_super = function(x) paste0("^", x, "^"),
     wrap_sub = function(x) paste0("~", x, "~"),
+    wrap_coeff = function(x) paste0("**", x, "**"),
     ...
   )
 }
