@@ -33,9 +33,9 @@ A tibble with one row per molecule
 Data frame reprsentation of a molecule object
 }
 \examples{
-as.data.frame(as_mol(~H2O))
+as.data.frame(as_mol("H2O"))
 library(tibble)
-as_tibble(as_mol(~H2O))
+as_tibble(as_mol("H2O"))
 as_tibble(mol("H2O", "NH3"))
 
 }

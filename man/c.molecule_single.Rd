@@ -48,7 +48,7 @@ A mol object
 Combine, subset molecule(s) objects
 }
 \examples{
-c(as_mol(~H2O), as_mol(~`NH3`))
+c(as_mol("H2O"), as_mol("NH3"))
 mols <- as_mol(c("H2O", "NH3"))
 mols[1]
 

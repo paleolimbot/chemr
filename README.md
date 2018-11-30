@@ -5,7 +5,7 @@ chemr
 
 [![Travis build status](https://travis-ci.org/paleolimbot/chemr.svg?branch=master)](https://travis-ci.org/paleolimbot/chemr) [![Coverage status](https://codecov.io/gh/paleolimbot/chemr/branch/master/graph/badge.svg)](https://codecov.io/github/paleolimbot/chemr?branch=master)
 
-Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used by the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [easyphreeqc](https://github.com/paleolimbot/easyphreeqc) is under active development.
+Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used by the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [tidyphreeqc](https://github.com/paleolimbot/tidyphreeqc) is under active development.
 
 Installation
 ------------
@@ -119,14 +119,14 @@ Reactions are essentially a molecule vector with coefficients (positive for the 
 
 ``` r
 as_reaction("2H2 + O2 = 2H2O")
-#> <reaction> 2H2 + O2 = 2H2O
+#> <reaction> 2H2 + O2 = 2H2O   log_k = NA
 ```
 
 The `is_balanced()` and `balance()` functions will happily balance these for you, provided you have the correct number of species defined.
 
 ``` r
 balance("H2 + O2 = H2O")
-#> <reaction> 2H2 + O2 = 2H2O
+#> <reaction> 2H2 + O2 = 2H2O   log_k = NA
 ```
 
 You can access various components of a reaction in the same way as for molecules:
@@ -134,12 +134,12 @@ You can access various components of a reaction in the same way as for molecules
 ``` r
 r <- as_reaction("2H2 + O2 = 2H2O")
 lhs(r)
-#> <reaction> 2H2 + O2 =
+#> <reaction> 2H2 + O2 =    log_k = NA
 ```
 
 ``` r
 rhs(r)
-#> <reaction> 2H2O =
+#> <reaction> 2H2O =    log_k = NA
 ```
 
 ``` r
@@ -174,7 +174,7 @@ Molecule and Reaction arithmetic
 Various arithmetic operators are available for molecule and reaction objects, such as `+`, `*` and `==`.
 
 ``` r
-m <- mol(~Fe2O3, ~H2O, ~NH3, ~`H+`)
+m <- mol("Fe2O3", "H2O", "NH3", "H+")
 m + as_mol("OH-")
 #> <mol>
 #> [1] Fe2O3OH- H2OOH-   NH3OH-   HOH
@@ -194,26 +194,26 @@ m == as_mol(~H2O)
 Reactions have similar arithmetic, with coefficients to various molecules being added together.
 
 ``` r
-r1 <- as_reaction("2H2 + O2 = 2H2O")
-r1 + as_reaction("H2O = H2O")
-#> <reaction> 2H2 + O2 + H2O = 2H2O + H2O
+r1 <- as_reaction("2H2 + O2 = 2H2O", log_k = -46.62)
+r1 + as_reaction("H2O = H2O", log_k = 0)
+#> <reaction> 2H2 + O2 + H2O = 2H2O + H2O   log_k = -46.62
 ```
 
 By default the reaction isn't simplified, but can be using `simplify()` and `remove_zero_counts()`.
 
 ``` r
-simplify(r1 + as_reaction("H2O = H2O"))
-#> <reaction> 2H2 + O2 = 2H2O
+simplify_reaction(r1 + as_reaction("H2O = H2O", log_k = 0))
+#> <reaction> 2H2 + O2 = 2H2O   log_k = -46.62
 ```
 
 ``` r
-simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O"))
-#> <reaction> 2H2 + O2 + 0H2O = 2H+ + 2OH-
+simplify_reaction(r1 - as_reaction("2H+ + 2OH- = 2H2O", log_k = 14))
+#> <reaction> 2H2 + O2 + 0H2O = 2H+ + 2OH-  log_k = -60.62
 ```
 
 ``` r
-remove_zero_counts(simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O")))
-#> <reaction> 2H2 + O2 = 2H+ + 2OH-
+remove_zero_counts(simplify_reaction(r1 - as_reaction("2H+ + 2OH- = 2H2O", log_k = 14)))
+#> <reaction> 2H2 + O2 + 0H2O = 2H+ + 2OH-  log_k = -60.62
 ```
 
 The Wish List

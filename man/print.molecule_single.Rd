@@ -27,8 +27,8 @@ A character vector
 Coerce molecule(s) to character
 }
 \examples{
-print(as_molecule_single(~H2O))
-print(as_mol(~H2O))
+print(as_molecule_single("H2O"))
+print(as_mol("H2O"))
 as.character(NA_molecule_)
 as.character(mol(NA_molecule_))
 

@@ -173,7 +173,7 @@ as_mol.list <- function(x, validate = TRUE, ...) {
 #' @export
 #'
 #' @examples
-#' c(as_mol(~H2O), as_mol(~`NH3`))
+#' c(as_mol("H2O"), as_mol("NH3"))
 #' mols <- as_mol(c("H2O", "NH3"))
 #' mols[1]
 #'
@@ -349,8 +349,8 @@ is_mol <- function(x) {
 #' @export
 #'
 #' @examples
-#' print(as_molecule_single(~H2O))
-#' print(as_mol(~H2O))
+#' print(as_molecule_single("H2O"))
+#' print(as_mol("H2O"))
 #' as.character(NA_molecule_)
 #' as.character(mol(NA_molecule_))
 #'
@@ -658,22 +658,22 @@ combine_molecules <- function(...) {
 #' @export
 #'
 #' @examples
-#' simplify(as_mol("CHOOOH"))
+#' simplify_mol(as_mol("CHOOOH"))
 #'
-simplify <- function(x, ...) UseMethod("simplify")
+simplify_mol <- function(x, ...) UseMethod("simplify_mol")
 
-#' @rdname simplify
+#' @rdname simplify_mol
 #' @export
 remove_zero_counts <- function(x, ...) UseMethod("remove_zero_counts")
 
-#' @rdname simplify
+#' @rdname simplify_mol
 #' @export
-simplify.molecule_single <- function(x, ...) {
+simplify_mol.molecule_single <- function(x, ...) {
 
   # simplify sub mols
   sub_mols <- vapply(x, is_molecule_single, logical(1))
   x[sub_mols] <- lapply(x[sub_mols], function(el) {
-    simplify(el) * attr(el, "count")
+    simplify_mol(el) * attr(el, "count")
   })
   # need to replace sub-molecule names with "", or unlist()
   # will concatenate names together of sub-molecules
@@ -696,7 +696,7 @@ simplify.molecule_single <- function(x, ...) {
   new_molecule_single(as.list(obj), charge = charge(x), count = attr(x, "count"))
 }
 
-#' @rdname simplify
+#' @rdname simplify_mol
 #' @export
 remove_zero_counts.molecule_single <- function(x, tol = .Machine$double.eps^0.5, ...) {
   counts <- vapply(x, function(el) {
@@ -709,13 +709,13 @@ remove_zero_counts.molecule_single <- function(x, tol = .Machine$double.eps^0.5,
   new_molecule_single(x[abs(counts) >= tol], charge = charge(x), count = attr(x, "count"))
 }
 
-#' @rdname simplify
+#' @rdname simplify_mol
 #' @export
-simplify.mol <- function(x, ...) {
-  new_mol(lapply(x, simplify.molecule_single))
+simplify_mol.mol <- function(x, ...) {
+  new_mol(lapply(x, simplify_mol.molecule_single))
 }
 
-#' @rdname simplify
+#' @rdname simplify_mol
 #' @export
 remove_zero_counts.mol <- function(x, tol = .Machine$double.eps^0.5, ...) {
   new_mol(lapply(x, remove_zero_counts.molecule_single, tol = tol))
@@ -736,7 +736,7 @@ remove_zero_counts.mol <- function(x, tol = .Machine$double.eps^0.5, ...) {
 #' @export
 #'
 #' @examples
-#' sort(mol(~H2O, ~Ar, ~H2))
+#' sort(mol("H2O", "Ar", "H2"))
 #' sort(as_reaction("2H2O + 4H+ = 2H2O + 4H+"))
 #'
 sort.mol <- function(x, decreasing = FALSE, ...) {
@@ -814,9 +814,9 @@ parse_mol <- function(txt, validate = TRUE, na = c("NA", "")) {
 #' @importFrom tibble as_tibble
 #'
 #' @examples
-#' as.data.frame(as_mol(~H2O))
+#' as.data.frame(as_mol("H2O"))
 #' library(tibble)
-#' as_tibble(as_mol(~H2O))
+#' as_tibble(as_mol("H2O"))
 #' as_tibble(mol("H2O", "NH3"))
 #'
 as.data.frame.molecule_single <- function(x, ...) {
@@ -834,8 +834,7 @@ as_tibble.molecule_single <- function(x, ...) {
 as_tibble.mol <- function(x, ...) {
   df <- cbind(
     tibble::tibble(
-      mol = x,
-      mol_text = as.character(x),
+      mol = as.character(x),
       mass = mass(x),
       charge = charge(x)
     ),
@@ -866,7 +865,7 @@ as.matrix.mol <- function(x, ...) {
 
 # at the base of many of the above functions
 element_tbl <- function(mol_single) {
-  m_simple <- unclass(remove_zero_counts(simplify(mol_single)))
+  m_simple <- unclass(remove_zero_counts(simplify_mol(mol_single)))
   # make sure there is always one row
   m_simple$.dummy <- 1
   tibble::as_tibble(m_simple)

@@ -27,7 +27,7 @@ A character vector
 Coerce reactions to a character vector
 }
 \examples{
-r <- as_reaction(2*H2 + O2 ~ 2*H2O)
+r <- as_reaction("2H2 + O2 = 2H2O")
 as.character(r)
 print(r)
 

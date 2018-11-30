@@ -18,8 +18,8 @@ A reaction object
 Reaction arithmetic
 }
 \examples{
-r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
-r2 <- as_reaction("H3O+ + OH- = 2H2O")
+r1 <- as_reaction("O2 + 2H2 = 2H2O", log_k = -46.62)
+r2 <- as_reaction("H3O+ + OH- = 2H2O", log_k = 14)
 
 -r1
 -r2

@@ -5,6 +5,7 @@
 #' @param counts_lhs The counts for molecules on the lefthand side
 #' @param rhs The righthand side
 #' @param counts_rhs The counts for molecules on the righthand side
+#' @param log_k The base 10 logarithm of the reaction quotient
 #' @param validate Flag to validate molecules in the reaction
 #' @param x An object to convert to a reaction object
 #' @param coefficient coefficient corresponding to as_reaction input
@@ -14,10 +15,9 @@
 #' @export
 #'
 #' @examples
-#' reaction(~H2O + `H+`, ~`H3O+`)
-#' reaction(c("H2O", "H+"), "H3O+")
+#' reaction(c("H2O", "H+"), "H3O+", log_k = 14)
 #'
-reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE) {
+reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, log_k = NA_real_, validate = TRUE) {
   lhs <- as_mol(lhs, validate = validate)
   # check length of counts_lhs
   if((length(counts_lhs) != length(lhs)) && (length(counts_lhs) != 1)) {
@@ -30,8 +30,10 @@ reaction <- function(lhs, rhs, counts_lhs = 1, counts_rhs = 1, validate = TRUE) 
     stop("counts_lhs must be 1 or length(rhs)")
   }
   counts_rhs <- rep_len(counts_rhs, length(rhs)) * -1
-  r <- new_reaction(list(mol = c(lhs, rhs),
-                         coefficient = c(counts_lhs, counts_rhs)))
+
+  log_k <- as.numeric(log_k)
+
+  r <- new_reaction(list(mol = c(lhs, rhs), coefficient = c(counts_lhs, counts_rhs)), log_k = log_k)
   # need to validate reaction counts regardless of validate arg
   validate_reaction(r)
   # return r
@@ -62,18 +64,18 @@ as_reaction.reaction <- function(x, ...) {
 
 #' @rdname reaction
 #' @export
-as_reaction.mol <- function(x, coefficient = rep_len(1, length(x)), validate = TRUE, ...) {
+as_reaction.mol <- function(x, coefficient = rep_len(1, length(x)), log_k = NA_real_, validate = TRUE, ...) {
   if(length(coefficient) != length(x)) {
     stop("length(coefficient) is not equal to length(x)")
   }
-  r <- new_reaction(list(mol = x, coefficient = coefficient))
+  r <- new_reaction(list(mol = x, coefficient = coefficient), log_k = log_k)
   if(validate) validate_reaction(r)
   r
 }
 
 #' @rdname reaction
 #' @export
-as_reaction.formula <- function(x, validate = TRUE, ...) {
+as_reaction.formula <- function(x, log_k = NA_real_, validate = TRUE, ...) {
 
   counts_lhs <- count_names(x[[2]])
   counts_rhs <- count_names(x[[3]])
@@ -84,12 +86,12 @@ as_reaction.formula <- function(x, validate = TRUE, ...) {
   reaction(lhs = mols_lhs, rhs = mols_rhs,
            counts_lhs =  stats::setNames(counts_lhs, NULL),
            counts_rhs = stats::setNames(counts_rhs, NULL),
-           validate = FALSE)
+           log_k = log_k, validate = FALSE)
 }
 
 #' @rdname reaction
 #' @export
-as_reaction.character <- function(x, validate = TRUE, ...) {
+as_reaction.character <- function(x, log_k = NA_real_, validate = TRUE, ...) {
   # character representation is the same the phreeqc reaction format
   # CaCl2 = Ca+2 + 2Cl
   sides <- stringr::str_split(x, "\\s*=\\s*")[[1]]
@@ -100,7 +102,7 @@ as_reaction.character <- function(x, validate = TRUE, ...) {
            rhs = side_obj[[2]]$mols,
            counts_lhs = side_obj[[1]]$counts,
            counts_rhs = side_obj[[2]]$counts,
-           validate = FALSE)
+           log_k = log_k, validate = FALSE)
 
 }
 
@@ -121,7 +123,7 @@ as_reaction_list.reaction_list <- function(x, ...) {
 #' @rdname reaction
 #' @export
 as_reaction_list.list <- function(x, validate = TRUE, ...) {
-  do.call(reaction_list, c(x, list(validate = validate)))
+  do.call(reaction_list, c(x, list(validate = validate, ...)))
 }
 
 #' @rdname reaction
@@ -130,22 +132,12 @@ as_reaction_list.reaction <- function(x, validate = TRUE, ...) {
   reaction_list(x, validate = validate)
 }
 
-#' @rdname reaction
-#' @export
-as_reaction_list.list <- function(x, validate = TRUE, ...) {
-  rl <- new_mol(lapply(x, as_reaction))
-  if(validate) validate_reaction_list(rl)
-  rl
-}
-
-
 parse_side <- function(side, validate = TRUE) {
-  components <- stringr::str_split(side, "\\s+\\+\\s+")[[1]]
+  components <- stringr::str_split(side, "\\s+\\+\\s*")[[1]]
   # component is a count plus a molecule id
-  component_match <- stringr::str_match(components, "^\\s*([0-9.]*)\\s?(.*?)\\s*$")
+  component_match <- stringr::str_match(components, "^\\s*([0-9.]*)\\s*(.*?)\\s*$")
   bad_components <- components[is.na(component_match[, 1, drop = TRUE])]
-  if(length(bad_components) > 0) stop("Bad components in reaction: ",
-                                      paste(bad_components, collapse = ", "))
+  if(length(bad_components) > 0) stop("Bad components in reaction: ", paste(bad_components, collapse = ", "))
   # extract counts
   counts <- component_match[, 2, drop = TRUE]
   counts <- ifelse(counts == "", "1", counts)
@@ -212,6 +204,7 @@ count_names_add <- function(name, env, n=1L) {
 #' Create, validate reaction objects
 #'
 #' @param x A reaction object
+#' @param log_k,value The base 10 log of the reaction quotient
 #'
 #' @return A reaction object
 #' @export
@@ -221,11 +214,11 @@ count_names_add <- function(name, env, n=1L) {
 #'                        coefficient = c(1, 1, -1)))
 #' validate_reaction(r)
 #'
-new_reaction <- function(x) {
+new_reaction <- function(x, log_k = NA_real_) {
   # check base type
   if(!is.list(x)) stop("x must be a list")
   # return structure
-  structure(x, class = "reaction")
+  structure(x, class = "reaction", log_k = log_k)
 }
 
 #' @rdname new_reaction
@@ -243,9 +236,38 @@ validate_reaction <- function(x) {
   if(!is.numeric(x$coefficient)) stop("x$coefficient is not numeric")
   # check lengths
   if(length(x$mol) != length(x$coefficient)) stop("length(x$mol) != length(x$coefficient)")
+  # check log_k
+  if(!is.double(attr(x, "log_k"))) stop('attr(x, "log_k") is not a double')
 
   # return x, invisibly
   invisible(x)
+}
+
+#' @rdname new_reaction
+#' @export
+#' @importFrom purrr %||%
+log_k <- function(x) {
+  if(inherits(x, "reaction_list")) {
+    new_reaction_list(lapply(x, log_k))
+  } else if(inherits(x, "reaction")) {
+    attr(x, "log_k") %||% NA_real_
+  } else {
+    log_k(as_reaction(x))
+  }
+}
+
+#' @rdname new_reaction
+#' @export
+`log_k<-` <- function(x, value) {
+  if(inherits(x, "reaction_list")) {
+    new_reaction_list(purrr::map2(x, value, `log_k<-`))
+  } else if(inherits(x, "reaction")) {
+    attr(x, "log_k") <- as.numeric(value)
+  } else {
+    stop("Can't assign log_k to object of class ", paste(class(x), collapse = "/"))
+  }
+
+  x
 }
 
 #' @rdname new_reaction
@@ -335,7 +357,7 @@ rhs <- function(x) {
 #' @export
 #'
 #' @examples
-#' r <- as_reaction(2*H2 + O2 ~ 2*H2O)
+#' r <- as_reaction("2H2 + O2 = 2H2O")
 #' as.character(r)
 #' print(r)
 #'
@@ -359,7 +381,7 @@ as.character.reaction_list <- function(x, ...) {
 #' @rdname as.character.reaction
 #' @export
 print.reaction <- function(x, ...) {
-  cat("<reaction>", as.character(x))
+  cat("<reaction>", as.character(x), "\tlog_k =", log_k(x))
   invisible(x)
 }
 
@@ -367,9 +389,12 @@ print.reaction <- function(x, ...) {
 #' @export
 print.reaction_list <- function(x, ...) {
   cat("<reaction_list>\n")
-  print(as.character(x), quote = FALSE, ...)
+  for(reaction in x) {
+    print(reaction, ...)
+    cat("\n")
+  }
+  invisible(x)
 }
-
 
 #' Reaction arithmetic
 #'
@@ -380,8 +405,8 @@ print.reaction_list <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
-#' r2 <- as_reaction("H3O+ + OH- = 2H2O")
+#' r1 <- as_reaction("O2 + 2H2 = 2H2O", log_k = -46.62)
+#' r2 <- as_reaction("H3O+ + OH- = 2H2O", log_k = 14)
 #'
 #' -r1
 #' -r2
@@ -394,13 +419,14 @@ print.reaction_list <- function(x, ...) {
 `*.reaction` <- function(x, y) {
   if(is_reaction(x) && is.numeric(y)) {
     x$coefficient <- x$coefficient * y
+    log_k(x) <- log_k(x) * y
     x
   } else if(is_reaction(y) && is.numeric(x)) {
     y$coefficient <- y$coefficient * x
+    log_k(y) <- log_k(y) * x
     y
   } else {
-    stop("* operator not defined for types ", class(x)[1],
-         ", ", class(y)[1])
+    stop("* operator not defined for types ", class(x)[1], ", ", class(y)[1])
   }
 }
 
@@ -408,10 +434,10 @@ print.reaction_list <- function(x, ...) {
 `/.reaction` <- function(x, y) {
   if(is_reaction(x) && is.numeric(y)) {
     x$coefficient <- x$coefficient / y
+    log_k(x) <- log_k(x) / y
     x
   } else {
-    stop("/ operator not defined for types ", class(x)[1],
-         ", ", class(y)[1])
+    stop("/ operator not defined for types ", class(x)[1], ", ", class(y)[1])
   }
 }
 
@@ -424,7 +450,8 @@ print.reaction_list <- function(x, ...) {
     list(
       mol = c(x$mol, y$mol),
       coefficient = c(x$coefficient, y$coefficient)
-    )
+    ),
+    log_k = log_k(x) + log_k(y)
   )
 }
 
@@ -485,36 +512,43 @@ print.reaction_list <- function(x, ...) {
 #'
 #' @examples
 #' r <- as_reaction("NH3 + H+ + H2O = H3O+ + NH3")
-#' simplify(r)
+#' simplify_reaction(r)
 #'
 #' r2 <- as_reaction("0NH3 + H+ + H2O = H3O+")
 #' remove_zero_counts(r2)
 #'
-simplify.reaction <- function(x, ...) {
+simplify_reaction <- function(x, ...) {
+  UseMethod("simplify_reaction")
+}
+
+#' @rdname simplify_reaction
+#' @export
+simplify_reaction.reaction <- function(x, ...) {
   unique_mols <- unique(x$mol)
   unique_coefficient <- vapply(unique_mols, function(m) {
     sum(x$coefficient[x$mol == as_mol(m)])
   }, numeric(1))
-  new_reaction(list(mol = unique_mols,
-                    coefficient = unique_coefficient))
+  new_reaction(list(mol = unique_mols, coefficient = unique_coefficient), log_k = log_k(x))
 }
 
-#' @rdname simplify.reaction
+#' @rdname simplify_reaction
 #' @export
 remove_zero_counts.reaction <- function(x, ...) {
-  x[!is.na(x$mol) & (x$coefficient != 0)]
+  y <- x[!is.na(x$mol) & (x$coefficient != 0)]
+  log_k(y) <- log_k(x)
+  y
 }
 
-#' @rdname simplify.reaction
+#' @rdname simplify_reaction
 #' @export
 remove_zero_counts.reaction_list <- function(x, ...) {
   new_reaction_list(lapply(x, remove_zero_counts.reaction))
 }
 
-#' @rdname simplify.reaction
+#' @rdname simplify_reaction
 #' @export
-simplify.reaction_list <- function(x, ...) {
-  new_reaction_list(lapply(x, simplify.reaction))
+simplify_reaction.reaction_list <- function(x, ...) {
+  new_reaction_list(lapply(x, simplify_reaction.reaction))
 }
 
 #' Data frame reprsentation of a reaction object
@@ -529,11 +563,11 @@ simplify.reaction_list <- function(x, ...) {
 #' @importFrom tibble as_tibble
 #'
 #' @examples
-#' as.data.frame(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#' as.data.frame(as_reaction("O2 + 2H2 = 2 H2O"))
 #' library(tibble)
-#' as_tibble(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#' as_tibble(as_reaction("O2 + 2H2 = 2 H2O"))
 #'
-#' as.matrix(as_reaction(O2 + 2*H2 ~ 2*H2O))
+#' as.matrix(as_reaction("O2 + 2H2 = 2 H2O"))
 #'
 as.data.frame.reaction <- function(x, ...) {
   as.data.frame(as_tibble.reaction(x, ...))
@@ -544,8 +578,15 @@ as.data.frame.reaction <- function(x, ...) {
 as_tibble.reaction <- function(x, ...) {
   tbl_mol <- as_tibble.mol(x$mol)
   tbl_mol$coefficient <- x$coefficient
+  if(nrow(tbl_mol) > 0) {
+    tbl_mol$reaction <- as.character(x)
+    tbl_mol$log_k <- log_k(x)
+  } else {
+    tbl_mol$reaction <- character(0)
+    tbl_mol$log_k <- numeric(0)
+  }
   # reorder columns
-  cols_first <- c("mol", "mol_text", "charge", "mass", "coefficient")
+  cols_first <- c("reaction", "log_k", "mol", "coefficient", "charge", "mass")
   tbl_mol[c(cols_first, setdiff(names(tbl_mol), cols_first))]
 }
 
@@ -581,10 +622,10 @@ as.data.frame.reaction_list <- function(x, ...) {
 #' @export
 #'
 #' @examples
-#' is_balanced(O2 + 2*H2 ~ 2*H2O)
-#' is_balanced(O2 + H2 ~ 2*H2O)
-#' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = FALSE)
-#' is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
+#' is_balanced("O2 + 2H2 = 2H2O")
+#' is_balanced("O2 + H2 = 2H2O")
+#' is_balanced("O2-4 + 2H2 = 2H2O", charge = FALSE)
+#' is_balanced("O2-4 + 2H2 = 2H2O", charge = TRUE)
 #'
 is_balanced <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
   if(is_reaction_list(x)) {
@@ -593,8 +634,7 @@ is_balanced <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
 
   x <- as_reaction(x)
   all_mols <- x$mol * x$coefficient
-  result <- remove_zero_counts(simplify(do.call(combine_molecules, all_mols)),
-                               tol = tol)
+  result <- remove_zero_counts(simplify_mol(do.call(combine_molecules, all_mols)), tol = tol)
   if(charge) {
     (length(result) == 0) && (abs(charge(result)) <= tol)
   } else {
@@ -638,7 +678,7 @@ balance <- function(x, charge = TRUE, tol = .Machine$double.eps^0.5) {
       x$mol <- c(x$mol, as_mol(electron_))
       x$coefficient <- c(x$coefficient, total_charge)
       # combines all electrons into one component
-      simplify(x)
+      simplify_reaction(x)
     }
     # return reaction
     x

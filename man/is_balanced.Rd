@@ -23,9 +23,9 @@ A balanced reaction or logical describing if the reaction is balanced
 Balance reactions
 }
 \examples{
-is_balanced(O2 + 2*H2 ~ 2*H2O)
-is_balanced(O2 + H2 ~ 2*H2O)
-is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = FALSE)
-is_balanced(`O2-4` + 2*H2 ~ 2*H2O, charge = TRUE)
+is_balanced("O2 + 2H2 = 2H2O")
+is_balanced("O2 + H2 = 2H2O")
+is_balanced("O2-4 + 2H2 = 2H2O", charge = FALSE)
+is_balanced("O2-4 + 2H2 = 2H2O", charge = TRUE)
 
 }

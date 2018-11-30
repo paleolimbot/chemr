@@ -3,15 +3,21 @@
 \name{new_reaction}
 \alias{new_reaction}
 \alias{validate_reaction}
+\alias{log_k}
+\alias{log_k<-}
 \alias{is_reaction}
 \alias{new_reaction_list}
 \alias{is_reaction_list}
 \alias{validate_reaction_list}
 \title{Create, validate reaction objects}
 \usage{
-new_reaction(x)
+new_reaction(x, log_k = NA_real_)
 
 validate_reaction(x)
+
+log_k(x)
+
+log_k(x) <- value
 
 is_reaction(x)
 
@@ -23,6 +29,8 @@ validate_reaction_list(x)
 }
 \arguments{
 \item{x}{A reaction object}
+
+\item{log_k, value}{The base 10 log of the reaction quotient}
 }
 \value{
 A reaction object

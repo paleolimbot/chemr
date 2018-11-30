@@ -22,7 +22,7 @@ reaction objects by decreasing coefficient. This is probably useful
 for comparison.
 }
 \examples{
-sort(mol(~H2O, ~Ar, ~H2))
+sort(mol("H2O", "Ar", "H2"))
 sort(as_reaction("2H2O + 4H+ = 2H2O + 4H+"))
 
 }

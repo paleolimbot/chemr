@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 [![Travis build status](https://travis-ci.org/paleolimbot/chemr.svg?branch=master)](https://travis-ci.org/paleolimbot/chemr) [![Coverage status](https://codecov.io/gh/paleolimbot/chemr/branch/master/graph/badge.svg)](https://codecov.io/github/paleolimbot/chemr?branch=master)
 
-Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used by the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [easyphreeqc](https://github.com/paleolimbot/easyphreeqc) is under active development.
+Chemr provides data structures for elements, molecules, and reactions, to provide a framework for chemical modelling and analysis in R. The text-based formats for elements, reactions, and molecules broadly correspond to that used by the [PHREEQC](https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/) tool, an interface for which is [available in R](https://cran.r-project.org/package=phreeqc). An extension to the R library, [tidyphreeqc](https://github.com/paleolimbot/tidyphreeqc) is under active development.
 
 ## Installation
 
@@ -135,7 +135,7 @@ as.matrix(r)
 Various arithmetic operators are available for molecule and reaction objects, such as `+`, `*` and `==`.
 
 ```{r}
-m <- mol(~Fe2O3, ~H2O, ~NH3, ~`H+`)
+m <- mol("Fe2O3", "H2O", "NH3", "H+")
 m + as_mol("OH-")
 ```
 
@@ -150,22 +150,22 @@ m == as_mol(~H2O)
 Reactions have similar arithmetic, with coefficients to various molecules being added together.
 
 ```{r}
-r1 <- as_reaction("2H2 + O2 = 2H2O")
-r1 + as_reaction("H2O = H2O")
+r1 <- as_reaction("2H2 + O2 = 2H2O", log_k = -46.62)
+r1 + as_reaction("H2O = H2O", log_k = 0)
 ```
 
 By default the reaction isn't simplified, but can be using `simplify()` and `remove_zero_counts()`.
 
 ```{r}
-simplify(r1 + as_reaction("H2O = H2O"))
+simplify_reaction(r1 + as_reaction("H2O = H2O", log_k = 0))
 ```
 
 ```{r}
-simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O"))
+simplify_reaction(r1 - as_reaction("2H+ + 2OH- = 2H2O", log_k = 14))
 ```
 
 ```{r}
-remove_zero_counts(simplify(r1 - as_reaction("2H+ + 2OH- = 2H2O")))
+remove_zero_counts(simplify_reaction(r1 - as_reaction("2H+ + 2OH- = 2H2O", log_k = 14)))
 ```
 
 ## The Wish List

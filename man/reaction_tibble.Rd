@@ -30,10 +30,10 @@ A tibble with one row per molecule in reaction
 Data frame reprsentation of a reaction object
 }
 \examples{
-as.data.frame(as_reaction(O2 + 2*H2 ~ 2*H2O))
+as.data.frame(as_reaction("O2 + 2H2 = 2 H2O"))
 library(tibble)
-as_tibble(as_reaction(O2 + 2*H2 ~ 2*H2O))
+as_tibble(as_reaction("O2 + 2H2 = 2 H2O"))
 
-as.matrix(as_reaction(O2 + 2*H2 ~ 2*H2O))
+as.matrix(as_reaction("O2 + 2H2 = 2 H2O"))
 
 }

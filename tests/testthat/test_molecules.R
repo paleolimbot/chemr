@@ -67,10 +67,8 @@ test_that("serialization works properly for nested molecules", {
 test_that("the print method works for molecule and mol", {
   water <- as_molecule_single(~H2O)
   waters <- mol(water, water)
-  expect_output(print(water), "<molecule_single>.*")
-  expect_output(print(waters), "<mol>.*?[1].*")
-  expect_identical(water, print(water))
-  expect_identical(waters, print(waters))
+  expect_identical(expect_output(print(water), "<molecule_single>.*"), water)
+  expect_identical(expect_output(print(waters), "<mol>.*?[1].*"), waters)
 })
 
 test_that("as.mol and as_mol are identical", {
@@ -260,20 +258,20 @@ test_that("combine_molecules works for both molecule_single and mol objects", {
   expect_true(is.na(combine_molecules(NA_molecule_, NA_molecule_)))
 })
 
-test_that("remove zero values, simplify works as intended", {
+test_that("remove zero values, simplify_mol works as intended", {
 
   m1 <- as_molecule_single("CH3COOH")
   m2 <- as_molecule_single("C2H4O2")
-  expect_identical(simplify(m1), m2)
+  expect_identical(simplify_mol(m1), m2)
 
   expect_identical(remove_zero_counts(new_molecule_single(list(H=2, O=0))),
                    as_molecule_single("H2"))
 
-  expect_equal(simplify(as_mol("Ca(SO4)(H2O)4") + as_mol("Ca(SO4)")),
+  expect_equal(simplify_mol(as_mol("Ca(SO4)(H2O)4") + as_mol("Ca(SO4)")),
                as_mol("Ca2S2O12H8"))
 
   # NA handling
-  expect_identical(simplify(NA_molecule_), NA_molecule_)
+  expect_identical(simplify_mol(NA_molecule_), NA_molecule_)
   expect_identical(remove_zero_counts(NA_molecule_), NA_molecule_)
 })
 
@@ -299,7 +297,7 @@ test_that("data frame, matrix representations are correct", {
   expect_equal(length(mols), nrow(tbl))
   expect_equal(length(mols), nrow(df))
   expect_equal(ncol(mat), 5)
-  required_names <- c("mol", "mol_text", "mass", "charge")
+  required_names <- c("mol", "mass", "charge")
   expect_true(all(required_names %in% names(tbl)))
   expect_true(all(required_names %in% names(df)))
   expect_equal(length(required_names) + ncol(mat), ncol(tbl))
@@ -326,10 +324,10 @@ test_that("data frame, matrix representations are correct", {
   expect_equal(ncol(as.matrix(mol())), 0)
   expect_is(as.data.frame(mol()), "data.frame")
   expect_equal(nrow(as.data.frame(mol())), 0)
-  expect_equal(ncol(as.data.frame(mol())), 4)
+  expect_equal(ncol(as.data.frame(mol())), 3)
   expect_is(tibble::as_tibble(mol()), "data.frame")
   expect_equal(nrow(tibble::as_tibble(mol())), 0)
-  expect_equal(ncol(tibble::as_tibble(mol())), 4)
+  expect_equal(ncol(tibble::as_tibble(mol())), 3)
 })
 
 test_that("electron is handled correctly", {

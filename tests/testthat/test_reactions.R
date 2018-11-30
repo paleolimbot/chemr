@@ -39,14 +39,13 @@ test_that("reaction charater printing works as intended", {
   rtxt <- "O2 + 2H2 = 2H2O"
   robj <- as_reaction(rtxt)
   expect_identical(as.character(robj), rtxt)
-  expect_output(print(robj), "<reaction>.*")
-  expect_identical(print(robj), robj)
+  expect_identical(expect_output(print(robj), "<reaction>.*"), robj)
 })
 
 test_that("reaction simplification works as intended", {
   r <- as_reaction("NH3 + H+ + H2O = H3O+ + NH3")
-  expect_equal(simplify(r)$mol, unique(r$mol))
-  expect_is(simplify(r), "reaction")
+  expect_equal(simplify_reaction(r)$mol, unique(r$mol))
+  expect_is(simplify_reaction(r), "reaction")
 
   r2 <- as_reaction("0NH3 + H+ + H2O = H3O+")
   expect_is(remove_zero_counts(r2), "reaction")
@@ -88,8 +87,7 @@ test_that("data frame representations are correct", {
   expect_is(tbl, "data.frame")
   expect_identical(as.data.frame(tbl), df)
   expect_equal(nrow(tbl), 3)
-  expect_equal(names(tbl), c("mol", "mol_text", "charge", "mass", "coefficient",
-                             "O", "H"))
+  expect_equal(names(tbl), c("reaction", "log_k", "mol", "coefficient", "charge", "mass", "O", "H"))
   expect_equal(tbl$coefficient, r1$coefficient)
 
   # empty intput
@@ -99,7 +97,7 @@ test_that("data frame representations are correct", {
   expect_equal(ncol(as.matrix(r0)), 0)
   expect_is(tibble::as_tibble(r0), "tbl")
   expect_equal(nrow(tibble::as_tibble(r0)), 0)
-  expect_equal(ncol(tibble::as_tibble(r0)), 5)
+  expect_equal(ncol(tibble::as_tibble(r0)), 6)
   expect_is(as.data.frame(r0), "data.frame")
   expect_identical(as.data.frame(r0), as.data.frame(tibble::as_tibble(r0)))
 })
@@ -244,10 +242,10 @@ test_that("reaction_list objects print properly", {
   r2 <- as_reaction(O2 + H2 ~ H2O)
   r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
   rl <- reaction_list(r1, r2, r3)
-  expect_output(print(rl), "<reaction_list>")
+  expect_identical(expect_output(print(rl), "<reaction_list>"), rl)
 })
 
-test_that("reaction_list objects implement mass(), charge(), simplify(), remove_zero_counts(), balance(), is_balanced(), lhs(), and rhs()", {
+test_that("reaction_list objects implement mass(), charge(), simplify_reaction(), remove_zero_counts(), balance(), is_balanced(), lhs(), and rhs()", {
   r1 <- as_reaction(O2 + 2*H2 ~ 2*H2O)
   r2 <- as_reaction(O2 + H2 ~ H2O)
   r3 <- as_reaction(`O2-4` + 2*H2 ~ 2*H2O)
@@ -257,8 +255,8 @@ test_that("reaction_list objects implement mass(), charge(), simplify(), remove_
   expect_is(mass(rl), "numeric")
   expect_length(charge(rl), 3)
   expect_is(charge(rl), "numeric")
-  expect_length(simplify(rl), 3)
-  expect_is(simplify(rl), "reaction_list")
+  expect_length(simplify_reaction(rl), 3)
+  expect_is(simplify_reaction(rl), "reaction_list")
   expect_length(remove_zero_counts(rl), 3)
   expect_is(remove_zero_counts(rl), "reaction_list")
 
