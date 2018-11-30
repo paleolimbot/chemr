@@ -46,7 +46,7 @@ molecule_single <- function(..., charge = 0, count = NA_real_, validate = TRUE) 
   })
   # parse non-element names as molecules
   sub_mols <- vapply(mol_list_parsed, is_molecule_single, logical(1))
-  non_elements <- !stringr::str_detect(names(mol_list_parsed), "^[A-Z][a-z]?$") & !sub_mols
+  non_elements <- !stringr::str_detect(names(mol_list_parsed), "^[A-Z][a-z_]*$") & !sub_mols
   non_element_counts <- mol_list_parsed[non_elements]
   mol_list_parsed[non_elements] <- mapply(as_molecule_single,
                                           names(mol_list_parsed)[non_elements],
@@ -303,14 +303,19 @@ validate_molecule_single <- function(x) {
   if(is.null(attr(x, "count"))) stop("x is missing attr 'count'")
   if(!is.double(attr(x, "count"))) stop("attr(x, 'count') is not a double")
 
-  # check symbols
-  sub_mol <- vapply(x, is_molecule_single, logical(1))
-  bad_symbols <- names(x)[!is_element(names(x)) & (!sub_mol)]
-  if(length(bad_symbols) > 0) stop("names(x) contained the following bad symbols: ",
-                                   paste(bad_symbols, collpase = ", "))
+  # Symbol checking makes it difficult to write reactions for long mineral names
+  # whose formula is unimportant (from the perspective of log_k values or balanced
+  # reactions). PHREEQC accepts anything that starts with a captial followed by
+  # [a-z_].
 
-  # check sub molecules
-  lapply(x[vapply(x, is_molecule_single, logical(1))], validate_molecule_single)
+  # # check symbols
+  # sub_mol <- vapply(x, is_molecule_single, logical(1))
+  # bad_symbols <- names(x)[!is_element(names(x)) & (!sub_mol)]
+  # if(length(bad_symbols) > 0) stop("names(x) contained the following bad symbols: ",
+  #                                  paste(bad_symbols, collpase = ", "))
+  #
+  # # check sub molecules
+  # lapply(x[vapply(x, is_molecule_single, logical(1))], validate_molecule_single)
 
   # return x, invisibly
   invisible(x)
@@ -343,6 +348,7 @@ is_mol <- function(x) {
 #' Coerce molecule(s) to character
 #'
 #' @param x A molecule(s) object
+#' @param wrap_super,wrap_sub wrapper functions for fancy formatting (see \link{as_markdown})
 #' @param ... Ignored
 #'
 #' @return A character vector
@@ -369,7 +375,7 @@ print.mol <- function(x, ...) {
 
 #' @rdname print.molecule_single
 #' @export
-as.character.molecule_single <- function(x, ...) {
+as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = identity, ...) {
   if(identical(x, NA_molecule_)) return(NA_character_)
   if(identical(x, electron_)) return("e-")
 
@@ -391,12 +397,12 @@ as.character.molecule_single <- function(x, ...) {
     ")"
   )
 
-  counts <- ifelse(counts == 1, "", format(counts, trim = TRUE, ...)) # will be character
+  counts <- ifelse(counts == 1, "", format(wrap_sub(counts), trim = TRUE, ...)) # will be character
   charge <- charge(x)
-  charge <- ifelse(charge == 1, "+",
-                   ifelse(charge == -1, "-",
-                          ifelse(charge > 0, paste0("+", format(charge, trim = TRUE, ...)),
-                                 ifelse(charge == 0, "", format(charge, trim = TRUE, ...)))))
+  charge <- ifelse(charge == 1, wrap_super("+"),
+                   ifelse(charge == -1, wrap_super("-"),
+                          ifelse(charge > 0, wrap_super(paste0("+", format(charge, trim = TRUE, ...))),
+                                 ifelse(charge == 0, "", wrap_super(format(charge, trim = TRUE, ...))))))
   mat <- rbind(symbols, counts)
   dim(mat) <- NULL
   paste0(paste(mat, collapse = ""), charge)
@@ -749,7 +755,7 @@ sort.reaction <- function(x, decreasing = FALSE, ...) {
 }
 
 # internal function to parse molecule text
-.el_regex <- "([A-Z][a-z]?|\\(.+?\\))(-?[0-9.]*)"
+.el_regex <- "([A-Z][a-z_]*|\\(.+?\\))(-?[0-9.]*)"
 # .sub_mol_regex <- "\\(.+?\\)(-?[0-9.]*)"
 .mol_regex <- "^(.+?)([-+][0-9]*)?$"
 

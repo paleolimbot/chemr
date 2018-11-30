@@ -11,7 +11,8 @@
 
 \method{print}{mol}(x, ...)
 
-\method{as.character}{molecule_single}(x, ...)
+\method{as.character}{molecule_single}(x, wrap_super = identity,
+  wrap_sub = identity, ...)
 
 \method{as.character}{mol}(x, ...)
 }
@@ -19,6 +20,8 @@
 \item{x}{A molecule(s) object}
 
 \item{...}{Ignored}
+
+\item{wrap_super, wrap_sub}{wrapper functions for fancy formatting (see \link{as_markdown})}
 }
 \value{
 A character vector

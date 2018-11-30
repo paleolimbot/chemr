@@ -132,6 +132,12 @@ as_reaction_list.reaction <- function(x, validate = TRUE, ...) {
   reaction_list(x, validate = validate)
 }
 
+#' @rdname reaction
+#' @export
+as_reaction_list.character <- function(x, validate = TRUE, ...) {
+  do.call(reaction_list, c(x, list(validate = validate, ...)))
+}
+
 parse_side <- function(side, validate = TRUE) {
   components <- stringr::str_split(side, "\\s+\\+\\s*")[[1]]
   # component is a count plus a molecule id
@@ -351,6 +357,7 @@ rhs <- function(x) {
 #' Coerce reactions to a character vector
 #'
 #' @param x A reaction object
+#' @param equals_sign An equals sign to use for the reaction
 #' @param ... Ignored
 #'
 #' @return A character vector
@@ -361,27 +368,27 @@ rhs <- function(x) {
 #' as.character(r)
 #' print(r)
 #'
-as.character.reaction <- function(x, ...) {
+as.character.reaction <- function(x, equals_sign = "=", ...) {
   sides <- vapply(list(lhs(x), rhs(x)), function(r) {
     coeffs <- abs(r$coefficient)
     coeffs <- ifelse(abs(coeffs - 1) < .Machine$double.eps^0.5,
                      "",
                      format(coeffs, ...))
-    paste0(coeffs, as.character(r$mol), collapse = " + ")
+    paste0(coeffs, as.character(r$mol, ...), collapse = " + ")
   }, character(1))
-  paste(sides, collapse = " = ")
+  paste(sides, collapse = paste0(" ", equals_sign, " "))
 }
 
 #' @rdname as.character.reaction
 #' @export
 as.character.reaction_list <- function(x, ...) {
-  vapply(x, as.character, character(1))
+  vapply(x, as.character, character(1), ...)
 }
 
 #' @rdname as.character.reaction
 #' @export
 print.reaction <- function(x, ...) {
-  cat("<reaction>", as.character(x), "\tlog_k =", log_k(x))
+  cat("<reaction>", as.character(x, ...), "\tlog_k =", log_k(x))
   invisible(x)
 }
 

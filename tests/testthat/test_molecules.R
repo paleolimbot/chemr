@@ -14,6 +14,10 @@ test_that("molecule character parsing works as intended", {
   expect_silent(as_molecule_single("Cl-"))
   expect_silent(as_molecule_single("O-2"))
 
+  # elements can be anything that starts with a captial followed by [a-z_]*
+  expect_silent(as_molecule_single("Hh2O"))
+  expect_silent(as_molecule_single("Hhhh2O+"))
+
   # make sure is vectorized
   expect_length(as_mol(c("H2O", "H+", "H3O+")), 3)
   expect_is(as_mol(c("H2O", "H+", "H3O+")), "mol")
@@ -28,9 +32,7 @@ test_that("molecule character parsing works as intended", {
 
   # bad
   expect_warning(as_molecule_single("H2o"), "Bad molecule text:.*")
-  expect_error(as_molecule_single("Hh2O"), "names\\(x\\) contained the following bad symbols:.*")
   expect_warning(as_molecule_single("H2O++"), "Bad molecule text:.*")
-  expect_warning(as_molecule_single("Hhhh2O+"), "Bad molecule text:.*")
 })
 
 test_that("nested molecules are possible", {
