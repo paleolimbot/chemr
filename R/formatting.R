@@ -30,7 +30,11 @@ as_markdown.default <- function(x, ...) {
 
 #' @rdname as_markdown
 #' @export
-as_markdown.reaction <- function(x, equals_sign = "\u21CC", ...) {
+as_markdown.reaction <- function(x, equals_sign = NULL, ...) {
+  if(is.null(equals_sign)) {
+    equals_sign <- "\u21CC"
+  }
+
   as.character(
     x,
     equals_sign = equals_sign,

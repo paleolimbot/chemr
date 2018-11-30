@@ -11,7 +11,7 @@ as_markdown(x, ...)
 
 \method{as_markdown}{default}(x, ...)
 
-\method{as_markdown}{reaction}(x, equals_sign = "⇌", ...)
+\method{as_markdown}{reaction}(x, equals_sign = NULL, ...)
 
 \method{as_markdown}{reaction_list}(x, ...)
 }
