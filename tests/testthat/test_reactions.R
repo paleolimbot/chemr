@@ -229,7 +229,7 @@ test_that("reaction_list objects have proper arithmetic properties", {
   expect_is(rl, "reaction_list")
   expect_is(rl * 2, "reaction_list")
   expect_identical(2 * rl, rl * 2)
-  expect_error(rl * c(1, 2), "length 1 or 3")
+  expect_error(rl * c(1, 2), "Tibble columns must have consistent length")
 
   expect_identical((rl * 2) / 2, rl)
   expect_is(rl / 2, "reaction_list")
