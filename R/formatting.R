@@ -78,11 +78,11 @@ chem_expression.default <- function(x, ...) {
       element_sep = ", ",
       wrap_super = function(x) paste0("{}^'", x, "'"),
       wrap_sub = function(x) paste0("[", x, "]"),
+      wrap_sub_molecule = function(x) paste0("paste('(', ", x, ", ')')"),
       ...
     ),
     ")"
   )
-
 }
 
 #' @rdname chem_expression

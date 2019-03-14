@@ -12,7 +12,8 @@
 \method{print}{mol}(x, ...)
 
 \method{as.character}{molecule_single}(x, wrap_super = identity,
-  wrap_sub = identity, element_sep = "", ...)
+  wrap_sub = identity, wrap_sub_molecule = function(x) paste0("(", x,
+  ")"), element_sep = "", ...)
 
 \method{as.character}{mol}(x, ...)
 }
@@ -21,7 +22,8 @@
 
 \item{...}{Ignored}
 
-\item{wrap_super, wrap_sub, element_sep}{wrapper functions for fancy formatting (see \link{chem_markdown})}
+\item{wrap_super, wrap_sub, element_sep, wrap_sub_molecule}{wrapper functions for
+fancy formatting (see \link{chem_markdown})}
 }
 \value{
 A character vector

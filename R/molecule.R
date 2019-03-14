@@ -348,7 +348,8 @@ is_mol <- function(x) {
 #' Coerce molecule(s) to character
 #'
 #' @param x A molecule(s) object
-#' @param wrap_super,wrap_sub,element_sep wrapper functions for fancy formatting (see \link{chem_markdown})
+#' @param wrap_super,wrap_sub,element_sep,wrap_sub_molecule wrapper functions for
+#'   fancy formatting (see \link{chem_markdown})
 #' @param ... Ignored
 #'
 #' @return A character vector
@@ -375,7 +376,9 @@ print.mol <- function(x, ...) {
 
 #' @rdname print.molecule_single
 #' @export
-as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = identity, element_sep = "", ...) {
+as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = identity,
+                                         wrap_sub_molecule = function(x) paste0("(", x, ")"),
+                                         element_sep = "", ...) {
   if(identical(x, NA_molecule_)) return(NA_character_)
   if(identical(x, electron_)) return("e-")
 
@@ -391,18 +394,20 @@ as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = id
 
   symbols <- names(x)
   sub_mol <- vapply(x, is_molecule_single, logical(1))
-  symbols[sub_mol] <- paste0(
-    "(",
-    vapply(x[sub_mol], as.character, trim = TRUE, ..., FUN.VALUE = character(1)),
-    ")"
+  symbols[sub_mol] <- wrap_sub_molecule(
+    vapply(
+      x[sub_mol],
+      as.character,
+      wrap_super = wrap_super, wrap_sub = wrap_sub, element_sep = element_sep, ...,
+      FUN.VALUE = character(1))
   )
 
-  counts <- ifelse(counts == 1, "", format(wrap_sub(counts), trim = TRUE, ...)) # will be character
+  counts <- ifelse(counts == 1, "", format(wrap_sub(counts), trim = TRUE)) # will be character
   charge <- charge(x)
   charge <- ifelse(charge == 1, wrap_super("+"),
                    ifelse(charge == -1, wrap_super("-"),
-                          ifelse(charge > 0, wrap_super(paste0("+", format(charge, trim = TRUE, ...))),
-                                 ifelse(charge == 0, "", wrap_super(format(charge, trim = TRUE, ...))))))
+                          ifelse(charge > 0, wrap_super(paste0("+", format(charge, trim = TRUE))),
+                                 ifelse(charge == 0, "", wrap_super(format(charge, trim = TRUE))))))
   mat <- rbind(symbols, counts, element_sep)
   dim(mat) <- NULL
   mat <- mat[mat != ""]
