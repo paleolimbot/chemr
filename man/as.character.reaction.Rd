@@ -7,8 +7,9 @@
 \alias{print.reaction_list}
 \title{Coerce reactions to a character vector}
 \usage{
-\method{as.character}{reaction}(x, equals_sign = "=", wrap_coeff = identity,
-  wrap_super = identity, wrap_sub = identity, ...)
+\method{as.character}{reaction}(x, equals_sign = "=",
+  wrap_coeff = identity, wrap_super = identity, wrap_sub = identity,
+  mol_sep = " + ", ...)
 
 \method{as.character}{reaction_list}(x, ...)
 
@@ -19,7 +20,7 @@
 \arguments{
 \item{x}{A reaction object}
 
-\item{equals_sign}{An equals sign to use for the reaction}
+\item{equals_sign, mol_sep}{An equals/plus sign to use for the reaction}
 
 \item{wrap_coeff}{Wrap coefficients for fancy formatting}
 

@@ -348,7 +348,7 @@ is_mol <- function(x) {
 #' Coerce molecule(s) to character
 #'
 #' @param x A molecule(s) object
-#' @param wrap_super,wrap_sub wrapper functions for fancy formatting (see \link{as_markdown})
+#' @param wrap_super,wrap_sub,element_sep wrapper functions for fancy formatting (see \link{chem_markdown})
 #' @param ... Ignored
 #'
 #' @return A character vector
@@ -375,7 +375,7 @@ print.mol <- function(x, ...) {
 
 #' @rdname print.molecule_single
 #' @export
-as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = identity, ...) {
+as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = identity, element_sep = "", ...) {
   if(identical(x, NA_molecule_)) return(NA_character_)
   if(identical(x, electron_)) return("e-")
 
@@ -403,8 +403,9 @@ as.character.molecule_single <- function(x, wrap_super = identity, wrap_sub = id
                    ifelse(charge == -1, wrap_super("-"),
                           ifelse(charge > 0, wrap_super(paste0("+", format(charge, trim = TRUE, ...))),
                                  ifelse(charge == 0, "", wrap_super(format(charge, trim = TRUE, ...))))))
-  mat <- rbind(symbols, counts)
+  mat <- rbind(symbols, counts, element_sep)
   dim(mat) <- NULL
+  mat <- mat[mat != ""]
   paste0(paste(mat, collapse = ""), charge)
 }
 

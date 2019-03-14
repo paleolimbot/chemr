@@ -15,8 +15,8 @@ remove_zero_counts(x, ...)
 
 \method{simplify_mol}{molecule_single}(x, ...)
 
-\method{remove_zero_counts}{molecule_single}(x, tol = .Machine$double.eps^0.5,
-  ...)
+\method{remove_zero_counts}{molecule_single}(x,
+  tol = .Machine$double.eps^0.5, ...)
 
 \method{simplify_mol}{mol}(x, ...)
 

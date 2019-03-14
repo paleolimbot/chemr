@@ -31,9 +31,11 @@ as.reaction(x, ...)
 \method{as_reaction}{mol}(x, coefficient = rep_len(1, length(x)),
   log_k = NA_real_, validate = TRUE, ...)
 
-\method{as_reaction}{formula}(x, log_k = NA_real_, validate = TRUE, ...)
+\method{as_reaction}{formula}(x, log_k = NA_real_, validate = TRUE,
+  ...)
 
-\method{as_reaction}{character}(x, log_k = NA_real_, validate = TRUE, ...)
+\method{as_reaction}{character}(x, log_k = NA_real_, validate = TRUE,
+  ...)
 
 as_reaction_list(x, ...)
 
