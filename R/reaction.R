@@ -477,7 +477,7 @@ print.reaction_list <- function(x, ...) {
 #' @export
 `*.reaction_list` <- function(x, y) {
   if((is_reaction_list(x) && is.numeric(y)) || (is_reaction_list(y) && is.numeric(x))) {
-    xy <- tibble::tibble(x, y) # use tibble's repeating
+    xy <- vctrs::vec_recycle_common(unclass(x), unclass(y))
     new_reaction_list(purrr::pmap(xy, `*.reaction`))
   } else {
     stop("* operator not defined for types ", class(x)[1],
@@ -488,7 +488,7 @@ print.reaction_list <- function(x, ...) {
 #' @export
 `/.reaction_list` <- function(x, y) {
   if(is_reaction_list(x) && is.numeric(y)) {
-    xy <- tibble::tibble(x, y) # use tibble's repeating
+    xy <- vctrs::vec_recycle_common(unclass(x), unclass(y))
     new_reaction_list(purrr::pmap(xy, `/.reaction`))
   } else {
     stop("/ operator not defined for types ", class(x)[1],
@@ -501,7 +501,7 @@ print.reaction_list <- function(x, ...) {
   if(missing(y)) return(x)
   x <- as_reaction_list(x)
   y <- as_reaction_list(y)
-  xy <- tibble::tibble(x, y) # use tibble's repeating
+  xy <- vctrs::vec_recycle_common(unclass(x), unclass(y))
   new_reaction_list(purrr::pmap(xy, `+.reaction`))
 }
 
