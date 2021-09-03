@@ -3,10 +3,12 @@
 
 # chemr <img src="man/figures/logo.png" align="right" width="120" />
 
-[![Travis build
-status](https://travis-ci.org/paleolimbot/chemr.svg?branch=master)](https://travis-ci.org/paleolimbot/chemr)
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/paleolimbot/chemr/workflows/R-CMD-check/badge.svg)](https://github.com/paleolimbot/chemr/actions)
 [![Coverage
 status](https://codecov.io/gh/paleolimbot/chemr/branch/master/graph/badge.svg)](https://codecov.io/github/paleolimbot/chemr?branch=master)
+<!-- badges: end -->
 
 Chemr provides data structures for elements, molecules, and reactions,
 to provide a framework for chemical modelling and analysis in R. The
