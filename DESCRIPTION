@@ -2,7 +2,11 @@ Package: chemr
 Type: Package
 Title: R Data Structures for Chemistry Data
 Version: 0.1.0.9000
-Author: Dewey Dunnington <dewey@fishandwhistle.net>
+Authors@R: c(
+    person("Dewey", "Dunnington", , "dewey@fishandwhistle.net", 
+           role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9415-4582")),
+    person("Zane", "Dax", , role = "ctb")
+  )
 Maintainer: Dewey Dunnington <dewey@fishandwhistle.net>
 Description: Chemistry calculations are often tedious and 
   error-prone, and benefit from automated calculations that are
